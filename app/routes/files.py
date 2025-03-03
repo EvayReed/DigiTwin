@@ -5,16 +5,16 @@ router = APIRouter(tags=["upload files"])
 
 
 @router.post("/add/pdf",
-             summary="self-check program",
-             description="When you see this message, it means that the Lord's light waves have successfully connected!",
+             summary="Upload PDF file",
+             description="Upload PDF file",
              response_class=HTMLResponse)
 async def add_pdf():
     return "pdf added!"
 
 
 @router.post("/add/txt",
-             summary="self-check program",
-             description="When you see this message, it means that the Lord's light waves have successfully connected!",
+             summary="Upload TXT file",
+             description="Upload TXT file",
              response_class=HTMLResponse)
 async def add_pdf():
     return "pdf added!"
