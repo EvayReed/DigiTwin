@@ -1,3 +1,6 @@
 fastapi==0.115.11
 langchain_ollama==0.2.3
 uvicorn==0.34.0
+
+langchain~=0.3.19
+python-dotenv~=1.0.1
