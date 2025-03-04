@@ -4,5 +4,5 @@ uvicorn==0.34.0
 
 langchain~=0.3.19
 python-dotenv~=1.0.1
-starlette~=0.45.3
+starlette~=0.45.3sfdsfsadfa
 websocket-client~=1.8.0
