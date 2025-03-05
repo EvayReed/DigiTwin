@@ -7,7 +7,7 @@ from langchain_core.messages import HumanMessage
 
 
 class RunnableHistoryMemory:
-    def __init__(self, history_function, model: BaseLLM, prompt: ChatPromptTemplate):
+    def __init__(self, history_function, model: BaseLLM, prompt: ChatPromptTemplate,session:str = None):
         """
         Initializes the encapsulation class
         :param history_function: The function used to retrieve history records
@@ -17,10 +17,8 @@ class RunnableHistoryMemory:
         try:
             # Create chat prompt template
             self.prompt = prompt
-
             # Create runnable
             self.runnable = self.prompt | model
-
             # Encapsulate into RunnableWithMessageHistory with history
             self.runnable_with_history = RunnableWithMessageHistory(
                 self.runnable,
@@ -30,18 +28,19 @@ class RunnableHistoryMemory:
             )
 
             # Create session
-            self.session = self.generate_random_session()
+            if session is None:
+                self.session = self.generate_random_session()
+            else:
+                self.session = session
 
         except TypeError as e:
             # Handle type errors (e.g., incorrect input types for prompt, model, or history_function)
             print(
                 f"TypeError: {str(e)} - Please ensure all parameters are of the correct type (e.g., prompt, model, history_function)")
-
         except AttributeError as e:
             # Handle attribute errors (e.g., missing required attributes or methods)
             print(
                 f"AttributeError: {str(e)} - Ensure all required attributes or methods exist and are initialized properly")
-
         except Exception as e:
             # Handle other unknown errors
             print(
@@ -62,22 +61,7 @@ class RunnableHistoryMemory:
             print(f"Error generating session ID: {str(e)} - Please check the UUID generation process.")
             return None
 
-    # def process_input(self, input_text: str, session_id: str,language: str = "english"):
-    #     """
-    #     处理输入文本并返回响应
-    #     :param input_text: 用户输入的文本
-    #     :param session_id: 会话 ID，用于获取历史记录
-    #     :param language:语言类型，默认英语
-    #     :return: 生成的响应
-    #     """
-    #     # 将输入和历史传递给 runnable
-    #     response = self.runnable_with_history.invoke(
-    #         {"language": language, "input": input_text},
-    #         config={"configurable": {"session_id": session_id}})
-    #
-    #     # 返回生成的响应
-    #     return response
-    def process_input(self, input_text: str, session_id: str = None, language: str = "english"):
+    def process_input(self, input_text: str, language: str = "english"):
         """
         Processes the input text and returns a response
         :param input_text: The text input from the user
@@ -87,14 +71,9 @@ class RunnableHistoryMemory:
         """
         try:
             # Pass input and history to runnable
-            if session_id != None:
-                response = self.runnable_with_history.invoke(
-                    {"language": language, "input": input_text},
-                    config={"configurable": {"session_id": session_id}})
-            else:
-                response = self.runnable_with_history.invoke(
-                    {"language": language, "input": input_text},
-                    config={"configurable": {"session_id": self.session}})
+            response = self.runnable_with_history.invoke(
+          {"language": language, "input": input_text},
+                config={"configurable": {"session_id": self.session}})
 
             # Return the generated response
             return response
@@ -103,11 +82,9 @@ class RunnableHistoryMemory:
             # Handle attribute errors (e.g., incorrect initialization of runnable_with_history)
             return {
                 "error": f"AttributeError: {str(e)} - Please check if runnable_with_history is correctly initialized"}
-
         except TypeError as e:
             # Handle type errors (e.g., incorrect input type)
             return {"error": f"TypeError: {str(e)} - The input type might not be correct"}
-
         except Exception as e:
             # Handle other unknown errors
             return {"error": f"Unknown error: {str(e)} - Please check the input and system configuration"}

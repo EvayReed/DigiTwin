@@ -17,3 +17,6 @@ class LLMEngine:
 
     async def reply(self, message: str):
         return (await self.llm.ainvoke(message)).content
+
+    def get_llm(self):
+        return self.llm
