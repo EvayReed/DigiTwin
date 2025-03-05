@@ -63,5 +63,5 @@ async def health_check():
     </style>
 
     <h1>⚡️ The server is running properly.！⚡️</h1>
-    <a href="http://0.0.0.0:9527/docs">🚀 View interface documentation</a>
+    <a href="http://127.0.0.1:9527/docs">🚀 View interface documentation</a>
     """
