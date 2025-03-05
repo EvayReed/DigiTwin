@@ -1,8 +1,10 @@
+from app.services.vector_database_server import VectorDatabaseManager
 from fastapi import APIRouter, UploadFile, File, HTTPException
 import logging
 from openai import OpenAI
 import tempfile
 import os
+import io
 from dotenv import load_dotenv
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
@@ -22,9 +24,20 @@ async def recognize_audio(audio_file: UploadFile = File(...)):
             transcription = client.audio.transcriptions.create(
                 model="whisper-1",
                 file=file)
-        return {"text": transcription.text}
 
+        transcription_bytes = io.BytesIO(transcription.text.encode('gbk'))
+        txt_file = UploadFile(filename="transcription.txt", file=transcription_bytes)
+        vectorDatabaseManager = VectorDatabaseManager()
+        try:
+            await vectorDatabaseManager.insertIntoVectorDB(txt_file)
+        except Exception as e:
+            raise HTTPException(status_code=501, detail=f"Error insertIntoVectorDB: {e}")
+
+        return {"text": transcription.text}
     except Exception as e:
         logger.error(f"Error in audio recognition: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if os.path.exists(tmp_file_path):
+            os.remove(tmp_file_path)
 
