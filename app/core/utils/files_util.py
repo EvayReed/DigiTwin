@@ -1,4 +1,4 @@
-from langchain.document_loaders import TextLoader, UnstructuredExcelLoader, CSVLoader
+from langchain_community.document_loaders import TextLoader, UnstructuredExcelLoader, CSVLoader
 from langchain_community.document_loaders import PyPDFLoader, JSONLoader
 import os
 from pydantic import BaseModel, Field, FilePath
