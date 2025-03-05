@@ -1,6 +1,10 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from starlette.websockets import WebSocketDisconnect
 from starlette.websockets import WebSocket
+from pydantic import BaseModel
+import logging
+
+logger = logging.getLogger(__name__)
 
 from app.services.llm_service import LLMEngine
 
@@ -8,21 +12,20 @@ router = APIRouter(tags=["Chat"])
 engine = LLMEngine()
 
 
+class ChatMessage(BaseModel):
+    message: str
+
+
 @router.post("/chat",
              summary="Chat with AI",
              description="Simple conversation with AI")
-async def chat_endpoint(message: str):
+async def chat_endpoint(chat_message: ChatMessage):
     try:
-        response = await engine.reply(message)
-        return {
-            "state": 200,
-            "message": response,
-        }
+        response = await engine.reply(chat_message.message)
+        return {"message": response}
     except Exception as e:
-        return {
-            "state": 500,
-            "error": str(e),
-        }
+        logger.error(f"Error in chat_endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.websocket("/wsChat")

@@ -30,5 +30,8 @@ class EmbeddingsEngine:
             base_url=base_url
         )
 
+    def get_embedding_model(self):
+        return self.e_model
+
     async def embed_documents(self, messages: List[str]):
         return self.e_model.embed_documents(messages)
