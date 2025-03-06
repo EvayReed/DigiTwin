@@ -16,7 +16,7 @@ async def add_file(
         vector_database_manager: VectorDatabaseManager = Depends(get_vector_database_manager)
 ):
     try:
-        result = await vector_database_manager.insertIntoVectorDB(file)
+        result = await vector_database_manager.insert_into_vector_db(file, index_path="dingkaile")
         return {"message": "File uploaded successfully", "content": result}
     except ValueError as e:
         logger.error(f"ValueError in add_file: {str(e)}")

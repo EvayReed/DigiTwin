@@ -6,10 +6,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from app.services.llm_service import LLMEngine
+from app.services.llm_service import ai_engine
 
 router = APIRouter(tags=["Chat"])
-engine = LLMEngine()
 
 
 class ChatMessage(BaseModel):
@@ -21,7 +20,7 @@ class ChatMessage(BaseModel):
              description="Simple conversation with AI")
 async def chat_endpoint(chat_message: ChatMessage):
     try:
-        response = await engine.reply(chat_message.message)
+        response = await ai_engine.reply(chat_message.message)
         return {"message": response}
     except Exception as e:
         logger.error(f"Error in chat_endpoint: {str(e)}")
@@ -34,7 +33,7 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
-            response = await engine.reply(data)
+            response = await ai_engine.reply(data)
             await websocket.send_text(response)
     except WebSocketDisconnect:
         print("Client disconnected")
