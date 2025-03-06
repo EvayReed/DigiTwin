@@ -10,7 +10,10 @@ router = APIRouter(tags=["memory_Chat"])
 
 engine = LLMEngine()
 
-memory = RunnableHistoryMemory(engine.get_llm())
+memory = RunnableHistoryMemory(
+    engine.get_llm(),
+    n_message = 5
+)
 
 @router.post("/chat_memory",
              summary="Chat with memory",

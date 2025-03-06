@@ -1,4 +1,6 @@
 import uuid
+from typing import Optional
+
 from langchain.llms import OpenAI
 from langchain_community.chat_message_histories import SQLChatMessageHistory
 from langchain_core.language_models.llms import BaseLLM
@@ -8,17 +10,18 @@ from langchain_core.messages import HumanMessage
 
 
 class RunnableHistoryMemory:
-    def __init__(self, model: BaseLLM, prompt: ChatPromptTemplate = None,session:str = None):
+    def __init__(self, model: BaseLLM, prompt: ChatPromptTemplate = None,session:str = None,n_message: Optional[int] = None):
         """
         Initializes the encapsulation class
         :param history_function: The function used to retrieve history records
         :param model: The language model to be used (e.g., text-davinci-003)
         :param prompt: The chat prompt template
+        :param n_message: The number of messages to retrieve (optional)
         """
         try:
             # Create chat prompt template
             if prompt is None:
-                self.prompt = self.get_prompt()
+                self.prompt = self.get_prompt(n_message)
             else:
                 self.prompt = prompt
             # Create runnable
@@ -92,17 +95,29 @@ class RunnableHistoryMemory:
             # Handle other unknown errors
             return {"error": f"Unknown error: {str(e)} - Please check the input and system configuration"}
 
-    def get_prompt(self):
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    "You're an assistant who speaks in {language}. Respond in 20 words or fewer",
-                ),
-                MessagesPlaceholder(variable_name="history",n_messages=5),
-                ("human", "{input}"),
-            ]
-        )
+    def get_prompt(self,n_message:Optional[int] = None):
+        if n_message is None:
+            prompt = ChatPromptTemplate.from_messages(
+                [
+                    (
+                        "system",
+                        "You're an assistant who speaks in {language}. Respond in 20 words or fewer",
+                    ),
+                    MessagesPlaceholder(variable_name="history"),
+                    ("human", "{input}"),
+                ]
+            )
+        else:
+            prompt = ChatPromptTemplate.from_messages(
+                [
+                    (
+                        "system",
+                        "You're an assistant who speaks in {language}. Respond in 20 words or fewer",
+                    ),
+                    MessagesPlaceholder(variable_name="history", n_messages=n_message),
+                    ("human", "{input}"),
+                ]
+            )
         return prompt
 
 # 定义一个函数，用于获取会话历史
