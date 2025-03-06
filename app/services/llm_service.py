@@ -26,6 +26,9 @@ class AIEngine:
     def get_embedding_model(self):
         return self.e_model
 
+    def get_chat_model(self):
+        return self.llm
+
     async def reply(self, message: str):
         return (await self.llm.ainvoke(message)).content
 

@@ -4,6 +4,8 @@ from starlette.websockets import WebSocket
 from pydantic import BaseModel
 import logging
 
+from app.services.vector_database_server import vector_db_man
+
 logger = logging.getLogger(__name__)
 
 from app.services.llm_service import ai_engine
@@ -22,6 +24,17 @@ async def chat_endpoint(chat_message: ChatMessage):
     try:
         response = await ai_engine.reply(chat_message.message)
         return {"message": response}
+    except Exception as e:
+        logger.error(f"Error in chat_endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/queryKnowledgeBase",
+             summary="Chat with KnowledgeBase",
+             description="Chat with your knowledge base")
+async def query_knowledge_base(query: str, index_path: str):
+    try:
+        return vector_db_man.query_knowledge_base(query, index_path)
     except Exception as e:
         logger.error(f"Error in chat_endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

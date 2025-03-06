@@ -6,13 +6,15 @@ import tempfile
 import os
 import io
 from dotenv import load_dotenv
+
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["upload audio"])
 
-@router.post("/add-audio", summary="Recognize audio" ,description="Recognize speech from audio and convert to text")
+
+@router.post("/add-audio", summary="Recognize audio", description="Recognize speech from audio and convert to text")
 async def recognize_audio(audio_file: UploadFile = File(...)):
     try:
         audio_data = await audio_file.read()
@@ -40,4 +42,3 @@ async def recognize_audio(audio_file: UploadFile = File(...)):
     finally:
         if os.path.exists(tmp_file_path):
             os.remove(tmp_file_path)
-

@@ -1,23 +1,18 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
-from app.services.vector_database_server import VectorDatabaseManager
+from app.services.vector_database_server import vector_db_man
 import logging
 
 router = APIRouter(tags=["upload files"])
 logger = logging.getLogger(__name__)
 
 
-def get_vector_database_manager():
-    return VectorDatabaseManager()
-
-
 @router.post("/add-file")
 async def add_file(
         index_path: str,
         file: UploadFile = File(...),
-        vector_database_manager: VectorDatabaseManager = Depends(get_vector_database_manager)
 ):
     try:
-        result = await vector_database_manager.insert_into_vector_db(file, index_path=f"app/store/{index_path}")
+        result = await vector_db_man.insert_into_vector_db(file, index_path)
         return {"message": "File uploaded successfully", "content": result}
     except ValueError as e:
         logger.error(f"ValueError in add_file: {str(e)}")
