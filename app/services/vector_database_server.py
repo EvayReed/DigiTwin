@@ -22,8 +22,7 @@ class VectorDatabaseManager:
             loader = MultiFileLoader(tmp_path)
             documents = loader.load()
             texts = self.text_splitter.split_documents(documents)
-            db = self.load_or_create_vector_db(ai_engine.get_embedding_model(), texts, index_path)
-            db.save_local("faiss_index")
+            self.update_or_create_faiss_index(ai_engine.get_embedding_model(), texts, index_path)
             return texts
         except IOError as e:
             logging.error(f"Data ingestion error: {e}")
@@ -33,14 +32,13 @@ class VectorDatabaseManager:
                 os.unlink(tmp_path)
 
     @staticmethod
-    def load_or_create_vector_db(embeddings, texts, index_path="faiss_index"):
+    def update_or_create_faiss_index(embeddings, texts, index_path: str):
         if os.path.exists(index_path):
             db = FAISS.load_local(index_path, embeddings, allow_dangerous_deserialization=True)
             db.add_documents(texts)
         else:
             db = FAISS.from_documents(texts, embeddings)
-            db.save_local(index_path)
-        return db
+        db.save_local(index_path)
 
     @staticmethod
     async def _validate_file_extension(filename: str) -> str:
