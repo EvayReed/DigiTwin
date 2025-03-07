@@ -10,7 +10,7 @@ from langchain_core.messages import HumanMessage
 
 
 class RunnableHistoryMemory:
-    def __init__(self, model: BaseLLM, prompt: ChatPromptTemplate = None,session:str = None,n_message: Optional[int] = None):
+    def __init__(self, model: BaseLLM, prompt: ChatPromptTemplate = None,session_id:str = None,n_message: Optional[int] = 10):
         """
         Initializes the encapsulation class
         :param history_function: The function used to retrieve history records
@@ -26,11 +26,11 @@ class RunnableHistoryMemory:
                 self.prompt = prompt
             # Create runnable
             self.runnable = self.prompt | model
-            # Create session
-            if session is None:
-                self.session = self.generate_random_session()
+            # Create session_id
+            if session_id is None:
+                self.session_id = self.generate_random_session()
             else:
-                self.session = session
+                self.session_id = session_id
             # Encapsulate into RunnableWithMessageHistory with history
             self.runnable_with_history = RunnableWithMessageHistory(
                 self.runnable,
@@ -79,7 +79,7 @@ class RunnableHistoryMemory:
             # Pass input and history to runnable
             response = self.runnable_with_history.invoke(
           {"language": language, "input": input_text},
-                config={"configurable": {"session_id": self.session}})
+                config={"configurable": {"session_id": self.session_id}})
 
             # Return the generated response
             return response
