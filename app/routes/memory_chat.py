@@ -32,13 +32,16 @@ async def chat(message: str):
         }
 
 
-@router.websocket("/wsChat")
+@router.websocket("/chat_memory/wsChat")
 async def websocket_endpoint(websocket: WebSocket):
+    wsChat_memory = RunnableHistoryMemory(
+        engine.get_llm(),
+    )
     await websocket.accept()
     try:
         while True:
             data = await websocket.receive_text()
-            response = await engine.reply(data)
+            response = await wsChat_memory.process_input(data)
             await websocket.send_text(response)
     except WebSocketDisconnect:
         print("Client disconnected")
