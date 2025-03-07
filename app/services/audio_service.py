@@ -14,8 +14,8 @@ pyttsx3_engine = pyttsx3.init()
 from app.services.vector_database_server import VectorDatabaseManager
 vectorDatabaseManager = VectorDatabaseManager()
 
-from app.services.llm_service import LLMEngine
-LLM_engine = LLMEngine()
+from app.services.llm_service import AIEngine
+LLM_engine = AIEngine()
 
 
 class AudioManager:
@@ -45,7 +45,7 @@ class AudioManager:
     async def TextToAudio(self, text: str):
         os.makedirs(self.cache_dir, exist_ok=True)
         temp_audio_path = tempfile.mktemp(suffix=".wav", dir=self.cache_dir).replace("\\", "/")
-        cleaned_text = re.sub(r'[\n\t\r]', ' ', text)
+        cleaned_text = re.sub(r'[\n\t\r*]', ' ', text)
         pyttsx3_engine.save_to_file(cleaned_text, temp_audio_path)
         pyttsx3_engine.runAndWait()
         return temp_audio_path
@@ -66,7 +66,7 @@ class AudioManager:
     async def AudioToAudio(self, request: Request, audio_file: UploadFile):
         try:
             transcription_text = await self.AudioToText(audio_file)
-            await self.TextInsertVectorDB(transcription_text)
+            # await self.TextInsertVectorDB(transcription_text)
             reply_text = await LLM_engine.reply(transcription_text)
             reply_audio_path = await self.TextToAudio(reply_text)
             base_url = f"{request.url.scheme}://{request.url.hostname}:{request.url.port}/"

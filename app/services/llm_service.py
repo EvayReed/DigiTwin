@@ -13,11 +13,13 @@ base_url = os.getenv("LLM_BACE_URL")
 
 class AIEngine:
     def __init__(self):
+        # Initialize the ChatOllama model with the given model, temperature, and base_url
         self.llm = ChatOllama(
             model=model,
             temperature=temperature,
             base_url=base_url
         )
+        # Initialize the OllamaEmbeddings model with the given model and base_url
         self.e_model = OllamaEmbeddings(
             model=model,
             base_url=base_url
