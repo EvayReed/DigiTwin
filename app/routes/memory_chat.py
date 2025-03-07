@@ -4,14 +4,14 @@ from starlette.websockets import WebSocketDisconnect
 from starlette.websockets import WebSocket
 from langchain_community.chat_message_histories import SQLChatMessageHistory
 from app.services.memory_service import RunnableHistoryMemory
-from app.services.llm_service import LLMEngine
+from app.services.llm_service import AIEngine
 
 router = APIRouter(tags=["memory_Chat"])
 
-engine = LLMEngine()
+engine = AIEngine()
 
 memory = RunnableHistoryMemory(
-    engine.get_llm(),
+    engine.get_chat_model(),
     n_message = 5
 )
 

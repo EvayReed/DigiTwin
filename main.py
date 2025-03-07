@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from app.routes import health, chat,memory_chat
+from app.routes import health, chat, files, audio,memory_chat
+
 
 app = FastAPI(
     title="DigiTwin Service API",
@@ -10,9 +11,10 @@ app = FastAPI(
 app.include_router(health.router)
 app.include_router(chat.router)
 app.include_router(memory_chat.router)
-
+app.include_router(files.router)
+app.include_router(audio.router)
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=9527)
+    uvicorn.run(app, host="127.0.0.1", port=9527)
