@@ -20,7 +20,7 @@ LLM_engine = AIEngine()
 
 class AudioManager:
 
-    def __init__(self, cache_dir="temp", AudioCacheMost=5):
+    def __init__(self, cache_dir="cache_audio", AudioCacheMost=5):
         self.cache_dir = cache_dir
         self.AudioCacheMost = AudioCacheMost
 
@@ -45,8 +45,7 @@ class AudioManager:
     async def TextToAudio(self, text: str):
         os.makedirs(self.cache_dir, exist_ok=True)
         temp_audio_path = tempfile.mktemp(suffix=".wav", dir=self.cache_dir).replace("\\", "/")
-        cleaned_text = re.sub(r'[\n\t\r*]', ' ', text)
-        pyttsx3_engine.save_to_file(cleaned_text, temp_audio_path)
+        pyttsx3_engine.save_to_file(text, temp_audio_path)
         pyttsx3_engine.runAndWait()
         return temp_audio_path
 
@@ -61,12 +60,14 @@ class AudioManager:
 
     async def TextInsertVectorDB(self, text: str):
         txt_file = UploadFile(filename="transcription.txt", file=io.BytesIO(text.encode('gbk')))
-        await vectorDatabaseManager.insertIntoVectorDB(txt_file)
+        await vectorDatabaseManager.insert_into_vector_db(txt_file)
 
     async def AudioToAudio(self, request: Request, audio_file: UploadFile):
         try:
             transcription_text = await self.AudioToText(audio_file)
             # await self.TextInsertVectorDB(transcription_text)
+            # prompt = "(Please answer in plain text only, as I will need to convert your response to speech later. Do not include any formatting such as formulas. Here are the inputs:)"
+            # reply_text = await LLM_engine.reply(prompt + transcription_text)
             reply_text = await LLM_engine.reply(transcription_text)
             reply_audio_path = await self.TextToAudio(reply_text)
             base_url = f"{request.url.scheme}://{request.url.hostname}:{request.url.port}/"

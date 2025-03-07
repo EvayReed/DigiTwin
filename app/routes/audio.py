@@ -12,19 +12,14 @@ audio_engine = AudioManager()
 async def chat_by_audio(request: Request, audio_file: UploadFile = File(...)):
     try:
         response = await audio_engine.AudioToAudio(request, audio_file)
-        return {
-            "state": 200,
-            "message": response,
-        }
+        return {"message": response}
     except Exception as e:
-        return {
-            "state": 500,
-            "error": str(e),
-        }
+        logger.error(f"Error Audio: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/temp/{filename}")
+@router.get("/cache_audio/{filename}")
 async def get_file(filename: str):
-    file_path = os.path.join("temp", filename)
+    file_path = os.path.join("cache_audio", filename)
     if os.path.exists(file_path):
         return FileResponse(file_path)
     return {"error": "File not found"}
