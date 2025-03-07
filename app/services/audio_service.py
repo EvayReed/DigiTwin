@@ -24,12 +24,8 @@ class AudioManager:
         self.cache_dir = cache_dir
         self.AudioCacheMost = AudioCacheMost
 
-    async def AudioToText(self, audio_file: UploadFile):
+    async def AudioToText(self, tmp_file_path: str):
         try:
-            audio_data = await audio_file.read()
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
-                tmp_file.write(audio_data)
-                tmp_file_path = tmp_file.name
             with open(tmp_file_path, "rb") as file:
                 client = OpenAI(api_key=api_key)
                 transcription = client.audio.transcriptions.create(
@@ -41,6 +37,13 @@ class AudioManager:
         finally:
             if os.path.exists(tmp_file_path):
                 os.remove(tmp_file_path)
+
+    async def _ioToWav(self, audio_file: UploadFile):
+        audio_data = await audio_file.read()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
+            tmp_file.write(audio_data)
+            tmp_file_path = tmp_file.name
+        return tmp_file_path
 
     async def TextToAudio(self, text: str):
         os.makedirs(self.cache_dir, exist_ok=True)
@@ -62,19 +65,27 @@ class AudioManager:
         txt_file = UploadFile(filename="transcription.txt", file=io.BytesIO(text.encode('gbk')))
         await vectorDatabaseManager.insert_into_vector_db(txt_file)
 
+    async def _WavInput(self, base_url: str, tmp_file_path: str):
+        transcription_text = await self.AudioToText(tmp_file_path)
+        # await self.TextInsertVectorDB(transcription_text)
+        # prompt = "(Please answer in plain text only, as I will need to convert your response to speech later. Do not include any formatting such as formulas. Here are the inputs:)"
+        # reply_text = await LLM_engine.reply(prompt + transcription_text)
+        reply_text = await LLM_engine.reply(transcription_text)
+        reply_audio_path = await self.TextToAudio(reply_text)
+        return {"audio_content": transcription_text,
+                "chat_reply": reply_text,
+                "reply_audio": f"{base_url}{reply_audio_path}"}
+
     async def AudioToAudio(self, request: Request, audio_file: UploadFile):
         try:
-            transcription_text = await self.AudioToText(audio_file)
-            # await self.TextInsertVectorDB(transcription_text)
-            # prompt = "(Please answer in plain text only, as I will need to convert your response to speech later. Do not include any formatting such as formulas. Here are the inputs:)"
-            # reply_text = await LLM_engine.reply(prompt + transcription_text)
-            reply_text = await LLM_engine.reply(transcription_text)
-            reply_audio_path = await self.TextToAudio(reply_text)
+            tmp_file_path = await self._ioToWav(audio_file)
             base_url = f"{request.url.scheme}://{request.url.hostname}:{request.url.port}/"
-            return {"audio_content": transcription_text,
-                    "chat_reply": reply_text,
-                    "reply_audio": f"{base_url}{reply_audio_path}"}
+            return await self._WavInput(base_url, tmp_file_path)
         except Exception as e:
             raise RuntimeError("Audio Service Error") from e
         finally:
             await self.AudioCacheLimit()
+
+    async def wsReply(self, path: str):
+        base_url = 'http://127.0.0.1:9527/'
+        return await self._WavInput(base_url, path)

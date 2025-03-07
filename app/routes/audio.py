@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Request
 from fastapi.responses import FileResponse
 import os
+import json
 import logging
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["upload audio"])
@@ -23,3 +24,19 @@ async def get_file(filename: str):
     if os.path.exists(file_path):
         return FileResponse(file_path)
     return {"error": "File not found"}
+
+
+from fastapi import WebSocket, WebSocketDisconnect
+
+# WebSocket 路由
+@router.websocket("/wsAudio")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_text()
+            response = await audio_engine.wsReply(data)
+            await websocket.send_text(json.dumps(response))
+    except WebSocketDisconnect:
+        print("Client disconnected")
+        await websocket.close()
