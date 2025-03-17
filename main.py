@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routes import health, chat, files, audio
+from app.routes import health, chat, files, audio, agent
 
 app = FastAPI(
     title="DigiTwin Service API",
@@ -11,6 +11,7 @@ app.include_router(health.router)
 app.include_router(chat.router)
 app.include_router(files.router)
 app.include_router(audio.router)
+app.include_router(agent.router)
 
 
 if __name__ == "__main__":

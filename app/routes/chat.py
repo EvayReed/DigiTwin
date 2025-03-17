@@ -23,7 +23,7 @@ class ChatMessage(BaseModel):
 async def chat_endpoint(chat_message: ChatMessage):
     try:
         response = await ai_engine.reply(chat_message.message)
-        return {"message": response}
+        return {"code": 200, "message": response}
     except Exception as e:
         logger.error(f"Error in chat_endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

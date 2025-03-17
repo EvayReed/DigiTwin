@@ -12,8 +12,56 @@ from langchain.chains import RetrievalQA
 SUPPORTED_EXTENSIONS = {".pdf", ".txt", ".doc", ".docx", ".xls", ".xlsx"}
 
 
+def format_text(file_path: str):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        lines = file.readlines()
+    data = []
+
+    current_message = None
+
+    for line in lines:
+        line = line.strip()
+
+        if len(line) > 19 and line[19] == ' ':
+            if current_message:
+                data.append(current_message)
+
+            timestamp = line[:19]  # 时间戳部分
+            user = line[20:]  # 用户部分
+
+            current_message = {
+                "timestamp": timestamp,
+                "user": user,
+                "message": ""
+            }
+
+        elif current_message:
+            current_message["message"] += line  # 拼接消息内容
+
+    if current_message:
+        data.append(current_message)
+
+    return data
+
+
 class VectorDatabaseManager:
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+
+    async def insert_into_vector_db2(self, file: UploadFile, index_path: str) -> List[str]:
+        index_path = self._format_path(index_path)
+        tmp_path = None
+        try:
+            file_extension = await self._validate_file_extension(file.filename)
+            tmp_path = await self._process_uploaded_content(file, file_extension)
+            texts = format_text(tmp_path)
+            self._update_or_create_faiss_index(ai_engine.get_embedding_model(), texts, index_path)
+            return texts
+        except IOError as e:
+            logging.error(f"Data ingestion error: {e}")
+            raise RuntimeError("Data ingestion error") from e
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
 
     async def insert_into_vector_db(self, file: UploadFile, index_path: str) -> List[str]:
         index_path = self._format_path(index_path)
