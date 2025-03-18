@@ -10,3 +10,4 @@ aiofiles~=24.1.0
 pydantic~=2.10.6
 openai~=1.63.2
 SQLAlchemy~=2.0.38
+requests~=2.32.3

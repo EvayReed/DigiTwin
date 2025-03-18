@@ -18,8 +18,6 @@ headers = {
 
 
 def describe_image(data):
-    YOUR_GENERATED_SECRET = 'yBmfxlQk3kjaT01klugL:5005bd6d856a544d043c3a64bb82447b12c7149442be05441bba4dd09f3ca97b'
-
     url = "https://api.scenex.jina.ai/v1/describe"
 
     headers = {
@@ -32,10 +30,9 @@ def describe_image(data):
 
         response.raise_for_status()
 
-        print("==== Success ====")
         result = response.json().get('result', [])
         if result:
-            return result[0].get('text', 'No text found')
+            return result[0].get('i18n', {}).get('zh-CN', 'No text found')
         else:
             return "No result found"
 
