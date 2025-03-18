@@ -90,6 +90,7 @@ class VectorDatabaseManager:
                 chain_type="stuff",
                 retriever=db.as_retriever(search_kwargs={"k": 4})
             )
+
             return qa.invoke(query)
         except Exception as e:
             raise RuntimeError("Error while querying knowledge base") from e

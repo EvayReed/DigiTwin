@@ -3,6 +3,7 @@ from starlette.websockets import WebSocketDisconnect
 from starlette.websockets import WebSocket
 from pydantic import BaseModel
 import logging
+from enum import Enum
 
 from app.services.vector_database_server import vector_db_man
 
@@ -15,6 +16,12 @@ router = APIRouter(tags=["Chat"])
 
 class ChatMessage(BaseModel):
     message: str
+
+
+class IndexType(str, Enum):
+    type1 = "Private"
+    type2 = "normal"
+    type3 = "wealth"
 
 
 @router.post("/chat",
@@ -32,7 +39,7 @@ async def chat_endpoint(chat_message: ChatMessage):
 @router.post("/queryKnowledgeBase",
              summary="Chat with KnowledgeBase",
              description="Chat with your knowledge base")
-async def query_knowledge_base(query: str, index_path: str):
+async def query_knowledge_base(query: str, index_path: IndexType):
     try:
         return vector_db_man.query_knowledge_base(query, index_path)
     except Exception as e:
