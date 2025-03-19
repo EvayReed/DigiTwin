@@ -5,6 +5,7 @@ from langchain_ollama import ChatOllama, OllamaEmbeddings
 import os
 from dotenv import load_dotenv
 from langchain_openai import OpenAI
+from langchain_openai import OpenAIEmbeddings
 
 load_dotenv()
 temperature = os.getenv("LLM_TEMPERATURE")
@@ -24,8 +25,8 @@ class AIEngine:
             model=model,
             base_url=base_url
         )
+        # self.e_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=api_key)
         self.open_llm = OpenAI(api_key=api_key)
-
 
     def get_embedding_model(self):
         return self.e_model

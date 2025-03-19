@@ -29,18 +29,14 @@ def format_text(file_path: str):
             timestamp = line[:19]  # 时间戳部分
             user = line[20:]  # 用户部分
 
-            current_message = {
-                "timestamp": timestamp,
-                "user": user,
-                "message": ""
-            }
+            current_message = f"timestamp: {timestamp};user: {user};message: "
 
         elif current_message:
-            current_message["message"] += line  # 拼接消息内容
+            current_message += line  # 拼接消息内容
 
     if current_message:
         data.append(current_message)
-
+    logging.error(data)
     return data
 
 
@@ -54,7 +50,8 @@ class VectorDatabaseManager:
             file_extension = await self._validate_file_extension(file.filename)
             tmp_path = await self._process_uploaded_content(file, file_extension)
             texts = format_text(tmp_path)
-            self._update_or_create_faiss_index(ai_engine.get_embedding_model(), texts, index_path)
+            for line in texts:
+                self._save_faiss_index(ai_engine.get_embedding_model(), [line], index_path)
             return texts
         except IOError as e:
             logging.error(f"Data ingestion error: {e}")
@@ -106,6 +103,15 @@ class VectorDatabaseManager:
             db.add_documents(texts)
         else:
             db = FAISS.from_documents(texts, embeddings)
+        db.save_local(index_path)
+
+    @staticmethod
+    def _save_faiss_index(embeddings, texts, index_path: str):
+        if os.path.exists(index_path):
+            db = FAISS.load_local(index_path, embeddings, allow_dangerous_deserialization=True)
+            db.add_texts(texts)
+        else:
+            db = FAISS.from_texts(texts, embeddings)
         db.save_local(index_path)
 
     @staticmethod

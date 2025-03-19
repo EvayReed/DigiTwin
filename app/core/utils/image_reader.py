@@ -1,40 +1,31 @@
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
 import requests
-import logging
-
-logger = logging.getLogger(__name__)
-
-YOUR_GENERATED_SECRET = os.getenv("SCENEX_API_KEY")
-
-SCENEX_API_URL = "https://api.scenex.jina.ai/v1/describe"
-
-headers = {
-    "x-api-key": f"token {YOUR_GENERATED_SECRET}",
-    "content-type": "application/json"
-}
+import json
 
 
-def describe_image(data):
-    url = "https://api.scenex.jina.ai/v1/describe"
-
-    headers = {
-        "x-api-key": f"token {YOUR_GENERATED_SECRET}",
-        "content-type": "application/json"
+def ocr_request(encoded_string):
+    url = "http://47.115.33.23:1224/api/ocr"
+    data = {
+        "base64": encoded_string,
+        # 可选参数示例
+        "options": {
+            "data.format": "text",
+        }
     }
+    headers = {"Content-Type": "application/json"}
+    data_str = json.dumps(data)
 
     try:
-        response = requests.post(url, headers=headers, json=data)
-
-        response.raise_for_status()
-
-        result = response.json().get('result', [])
-        if result:
-            return result[0].get('i18n', {}).get('zh-CN', 'No text found')
-        else:
-            return "No result found"
-
+        response = requests.post(url, data=data_str, headers=headers)
+        response.raise_for_status()  # 如果响应返回错误状态码，抛出异常
+        res_dict = json.loads(response.text)
+        return res_dict  # 返回 OCR 请求的结果
     except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
         return None
+
+
+# 示例使用
+encoded_string = "your_encoded_base64_string_here"
+result = ocr_request(encoded_string)
+if result:
+    print(result)

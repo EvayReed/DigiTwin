@@ -19,9 +19,9 @@ class ChatMessage(BaseModel):
 
 
 class IndexType(str, Enum):
-    type1 = "Private"
-    type2 = "normal"
-    type3 = "wealth"
+    Private = "Private"
+    Normal = "Normal"
+    Wealth = "Wealth"
 
 
 @router.post("/chat",
