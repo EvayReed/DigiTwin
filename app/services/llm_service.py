@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 from langchain_openai import OpenAI
 from langchain_openai import OpenAIEmbeddings
+
 from openai import (
     APIError,
     AsyncAzureOpenAI,
@@ -15,13 +16,16 @@ from openai import (
     RateLimitError,
 )
 
+
 load_dotenv()
 temperature = os.getenv("LLM_TEMPERATURE")
 model = os.getenv("LLM_MODEL")
 base_url = os.getenv("LLM_BACE_URL")
 api_key = os.getenv("OPENAI_API_KEY")
+
 openaimodel = os.getenv("OPENAI_MODEL")
 base_url = os.getenv("BASE_URL")
+
 
 
 class AIEngine:
