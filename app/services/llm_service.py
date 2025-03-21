@@ -6,6 +6,14 @@ import os
 from dotenv import load_dotenv
 from langchain_openai import OpenAI
 from langchain_openai import OpenAIEmbeddings
+from openai import (
+    APIError,
+    AsyncAzureOpenAI,
+    AsyncOpenAI,
+    AuthenticationError,
+    OpenAIError,
+    RateLimitError,
+)
 
 load_dotenv()
 temperature = os.getenv("LLM_TEMPERATURE")
@@ -13,6 +21,7 @@ model = os.getenv("LLM_MODEL")
 base_url = os.getenv("LLM_BACE_URL")
 api_key = os.getenv("OPENAI_API_KEY")
 openaimodel = os.getenv("OPENAI_MODEL")
+base_url = os.getenv("BASE_URL")
 
 
 class AIEngine:
@@ -34,6 +43,12 @@ class AIEngine:
             api_key=api_key, 
         )
 
+
+        self.client = AsyncOpenAI(
+            api_key=api_key, 
+            base_url = base_url
+        )
+
         self.openai_embeddings = OpenAIEmbeddings( 
             model="text-embedding-3-large", # 推荐的最新embedding模型 
             api_key=api_key )
@@ -53,6 +68,9 @@ class AIEngine:
     def get_openai_embeddings(self): 
         return self.openai_embeddings
     
+    def get_client(self): 
+        return self.client
+    
     def reply_openai(self, 
                     message: str, 
                     # system_prompt: Optional[str] = None,
@@ -71,3 +89,7 @@ class AIEngine:
 
 
 ai_engine = AIEngine()
+
+#test
+# input_text = "The meaning of life is "
+# print(ai_engine.get_client(input_text))

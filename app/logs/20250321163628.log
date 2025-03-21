@@ -1,0 +1,9 @@
+2025-03-21 16:36:53.244 | WARNING  | __main__:main:15 - Processing your request...
+2025-03-21 16:36:53.245 | INFO     | app.agent.base:run:140 - Executing step 1/20
+2025-03-21 16:36:53.250 | DEBUG    | app.agent.browser:get_browser_state:59 - Browser state error: Browser context not initialized
+2025-03-21 16:36:53.256 | ERROR    | app.llm:ask_tool:767 - Unexpected error in ask_tool: 'function' object has no attribute 'chat'
+2025-03-21 16:36:54.261 | ERROR    | app.llm:ask_tool:767 - Unexpected error in ask_tool: 'function' object has no attribute 'chat'
+2025-03-21 16:36:56.057 | ERROR    | app.llm:ask_tool:767 - Unexpected error in ask_tool: 'function' object has no attribute 'chat'
+2025-03-21 16:36:59.126 | ERROR    | app.llm:ask_tool:767 - Unexpected error in ask_tool: 'function' object has no attribute 'chat'
+2025-03-21 16:37:00.818 | ERROR    | app.llm:ask_tool:767 - Unexpected error in ask_tool: 'function' object has no attribute 'chat'
+2025-03-21 16:37:02.658 | ERROR    | app.llm:ask_tool:767 - Unexpected error in ask_tool: 'function' object has no attribute 'chat'
