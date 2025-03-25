@@ -1,0 +1,30 @@
+
+LLM_MODEL=deepseek-r1:14b
+
+LLM_BACE_URL=<http://10.1.4.136:11434/>
+
+LLM_TEMPERATURE=0.6
+
+
+SCENEX_API_KEY=
+
+SQLALCHEMY_DATABASE_URL =
+
+OPENAI_MODEL = gpt-4o
+OPENAI_BASE_URL = https://api.openai.com/v1
+OPENAI_API_KEY = s
+
+OPENAI_MAX_TOKENS = 4096
+
+OPENAI_model = gpt-4o
+OPENAI_base_url = https://api.openai.com/v1
+OPENAI_api_key = 
+
+OPENAI_max_tokens = 4096
+
+BROWSER_PROXY_HEADLESS = false
+BROWSER_proxy_headless = false
+
+SEARCH_ENGINE = google
+SEARCH_engine = google
+
