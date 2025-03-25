@@ -29,10 +29,9 @@ async def add_file(
 
 @router.post("/describe-image/")
 async def describe_image_endpoint(file: UploadFile = File(...)):
-    # 异步读取文件内容
     file_content = await file.read()
     base64_string = base64.b64encode(file_content).decode('utf-8')
 
-    description = ocr_request(base64_string)
+    image_content, res_dict = ocr_request(base64_string)
 
-    return JSONResponse(content={"description": description})
+    return JSONResponse(content={"description": res_dict, "image_content": image_content})
