@@ -90,7 +90,11 @@ class VectorDatabaseManager:
 
             return qa.invoke(query)
         except Exception as e:
-            raise RuntimeError("Error while querying knowledge base") from e
+            logging.error(e)
+            return {
+              "query": query,
+              "result": "未在数据库中找到相关信息"
+            }
 
     @staticmethod
     def _format_path(index_path: str) -> str:

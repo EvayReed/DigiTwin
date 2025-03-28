@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["upload audio"])
 
 
-@router.post("/add-audio", summary="Recognize audio", description="Recognize speech from audio and convert to text")
+@router.post("/audio-chat", summary="Recognize audio", description="Recognize speech from audio and convert to text")
 async def recognize_audio(audio_file: UploadFile = File(...)):
     try:
         audio_data = await audio_file.read()
