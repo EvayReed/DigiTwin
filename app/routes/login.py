@@ -1,6 +1,9 @@
 import requests
 from fastapi import APIRouter, HTTPException, Header
 import logging
+from pydantic import BaseModel
+
+from app.core.utils.user import create_user, get_user_config
 
 router = APIRouter(tags=["Login"])
 logger = logging.getLogger(__name__)
@@ -14,16 +17,31 @@ def verify_google_token(access_token: str):
     return response.json()
 
 
-@router.get("/login",
-            summary="Login",
-            description="login the app from google")
-def protected_resource(authorization: str = Header(...)):
-    token = authorization.split(" ")[1] if authorization.startswith("Bearer ") else None
+class LoginRequest(BaseModel):
+    idToken: str
+
+
+@router.post("/login",
+             summary="Login",
+             description="Login the app from Google")
+def login(login_request: LoginRequest):
+    token = login_request.idToken
+
     if not token:
         raise HTTPException(status_code=400, detail="Token is missing or invalid")
 
-    # Verify the token
+    # 验证 token
     user_info = verify_google_token(token)
-    # You can store user_info in your session/database here if needed
 
-    return {"message": "Access granted", "user_info": user_info}
+    if not user_info:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user_config = get_user_config(
+        user_id=user_info.get("sub"),
+        name=user_info.get("name"),
+        avatar=user_info.get("picture"),
+        email=user_info.get("email"),
+        token=token
+    )
+
+    return {"message": "Access granted", "user_config": user_config}
