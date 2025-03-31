@@ -1,41 +1,43 @@
-from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
-from pydantic import BaseModel
+from app.core.models.agent import AgentCreateRequest
+from fastapi import APIRouter, Header, Depends, HTTPException
 import logging
+import os
+from dotenv import load_dotenv
 
-from langchain.agents import initialize_agent
-from langchain.memory import ConversationBufferMemory
-from langchain_community.tools import SceneXplainTool
+from app.core.utils.agent import add_agent
+from app.core.utils.validate import get_token_from_header, handle_token_validation
 
-from app.services.llm_service import ai_engine
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
 
-tool = SceneXplainTool()
-
-memory = ConversationBufferMemory(memory_key="chat_history")
-agent = initialize_agent(
-    [tool], ai_engine.get_openai_model(), memory=memory, agent="conversational-react-description", verbose=True
-)
-
-
-router = APIRouter(tags=["Agent"])
 logger = logging.getLogger(__name__)
+router = APIRouter(tags=["Agent"])
 
 
-class AgentMessage(BaseModel):
-    message: str
+@router.post("/create-agent", summary="Create Agent", description="Create a new agent")
+async def create_agent(
+        agent_data: AgentCreateRequest,
+        authorization: str = Header(...),
+):
+    token = get_token_from_header(authorization)
+    user_id = handle_token_validation(token)
 
-
-@router.post("/chat",
-             summary="Chat with AI",
-             description="Simple conversation with AI")
-async def chat_endpoint(chat_message: AgentMessage):
     try:
-        response = agent.run(
-            input=(
-                "What is in this image https://img2.baidu.com/it/u=3451164928,1611454231&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=667 "
-                "Is it movie or a game? If it is a movie, what is the name of the movie?"
-            )
+        new_agent = add_agent(
+            user_id=user_id,
+            name=agent_data.name,
+            avatar=agent_data.avatar,
+            voice=agent_data.voice,
+            language=agent_data.language,
+            personality=agent_data.personality
         )
-        return {"code": 200, "message": response}
+
+        if new_agent:
+            logger.info(f"Agent created successfully for user_id: {user_id}")
+            return {"message": "Agent created successfully", "agent": new_agent}
+        else:
+            logger.error(f"Failed to create agent for user_id: {user_id}")
+            raise HTTPException(status_code=500, detail="Failed to create agent")
     except Exception as e:
-        logger.error(f"Error in chat_endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")

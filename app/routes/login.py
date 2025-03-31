@@ -3,7 +3,8 @@ from fastapi import APIRouter, HTTPException, Header
 import logging
 from pydantic import BaseModel
 
-from app.core.utils.user import create_user, get_user_config
+from app.core.utils.user import get_user_config
+from app.core.utils.validate import get_token_from_header
 
 router = APIRouter(tags=["Login"])
 logger = logging.getLogger(__name__)
@@ -21,16 +22,14 @@ class LoginRequest(BaseModel):
     idToken: str
 
 
-@router.post("/login",
-             summary="Login",
-             description="Login the app from Google")
-def login(login_request: LoginRequest):
-    token = login_request.idToken
-
+@router.get("/login",
+            summary="Login",
+            description="login the app from google")
+def protected_resource(authorization: str = Header(...)):
+    token = get_token_from_header(authorization)
     if not token:
         raise HTTPException(status_code=400, detail="Token is missing or invalid")
 
-    # 验证 token
     user_info = verify_google_token(token)
 
     if not user_info:
