@@ -4,7 +4,6 @@ import logging
 from pydantic import BaseModel
 
 from app.core.utils.user import get_user_config
-from app.core.utils.validate import get_token_from_header
 
 router = APIRouter(tags=["Login"])
 logger = logging.getLogger(__name__)
@@ -31,8 +30,6 @@ def login(login_request: LoginRequest):
     if not token:
         raise HTTPException(status_code=400, detail="Token is missing or invalid")
 
-    verify_google_token(token)
-
     user_info = verify_google_token(token)
 
     if not user_info:
@@ -46,4 +43,8 @@ def login(login_request: LoginRequest):
         token=token
     )
 
-    return {"message": "Access granted", "access_token": result.get("access_token"), "user_config": result.get("user_config")}
+    return {
+        "message": "Access granted",
+        "access_token": result.get("access_token"),
+        "user_config": result.get("user_config")
+    }
