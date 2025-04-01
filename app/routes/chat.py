@@ -5,6 +5,7 @@ from pydantic import BaseModel
 import logging
 from enum import Enum
 
+from app.core.models.chat import ChatRequest
 from app.services.vector_database_server import vector_db_man
 
 logger = logging.getLogger(__name__)
@@ -36,12 +37,10 @@ class IndexType(str, Enum):
 #         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/chat",
-             summary="Chat with KnowledgeBase",
-             description="Chat with your knowledge base")
-async def query_knowledge_base(query: str, index_path: IndexType):
+@router.post("/chat", summary="Chat with KnowledgeBase", description="Chat with your knowledge base")
+async def query_knowledge_base(request: ChatRequest):
     try:
-        return vector_db_man.query_knowledge_base(query, index_path)
+        return vector_db_man.query_knowledge_base(request.query, request.index_path)
     except Exception as e:
         logger.error(f"Error in chat_endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

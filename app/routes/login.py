@@ -22,20 +22,23 @@ class LoginRequest(BaseModel):
     idToken: str
 
 
-@router.get("/login",
-            summary="Login",
-            description="login the app from google")
-def protected_resource(authorization: str = Header(...)):
-    token = get_token_from_header(authorization)
+@router.post("/login",
+             summary="Login",
+             description="Login the app from Google")
+def login(login_request: LoginRequest):
+    token = login_request.idToken
+
     if not token:
         raise HTTPException(status_code=400, detail="Token is missing or invalid")
+
+    verify_google_token(token)
 
     user_info = verify_google_token(token)
 
     if not user_info:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    user_config = get_user_config(
+    result = get_user_config(
         user_id=user_info.get("sub"),
         name=user_info.get("name"),
         avatar=user_info.get("picture"),
@@ -43,4 +46,4 @@ def protected_resource(authorization: str = Header(...)):
         token=token
     )
 
-    return {"message": "Access granted", "user_config": user_config}
+    return {"message": "Access granted", "access_token": result.get("access_token"), "user_config": result.get("user_config")}

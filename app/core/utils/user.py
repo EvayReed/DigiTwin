@@ -1,3 +1,5 @@
+import logging
+
 from app.core.models.user import User
 from app.core.utils.agent import get_agents_by_user_id
 from app.services.database_service import get_db
@@ -10,7 +12,7 @@ def create_user(user_id: int, name: str, avatar: str = None, email: str = None, 
             name=name,
             avatar=avatar,
             email=email,
-            token=token
+            token=token[:255]
         )
 
         try:
@@ -42,7 +44,7 @@ def update_user_token(user_id: int, token: str) -> User:
     with next(get_db()) as db:
         user = db.query(User).filter(User.userId == user_id).first()
         if user:
-            user.token = token
+            user.token = token[:255]
             db.commit()
             db.refresh(user)
             return user
@@ -63,11 +65,18 @@ def get_user_config(user_id: int, name: str, avatar: str = None, email: str = No
 
     agents = get_agents_by_user_id(user_id)
 
-    return {
+    access_token = user.token if user.token else None
+
+    config = {
         "is_new_user": is_new_user,
         "user_id": user.userId,
         "name": user.name,
         "avatar": user.avatar,
         "email": user.email,
         "agents": agents
+    }
+
+    return {
+        "user_config": config,
+        "access_token": access_token
     }
