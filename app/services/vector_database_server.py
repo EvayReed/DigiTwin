@@ -89,13 +89,13 @@ class VectorDatabaseManager:
                 retriever=db.as_retriever(search_kwargs={"k": 4})
             )
 
-            return qa.invoke(query)
+            results = db.similarity_search(query, k=10)
+
+            return [doc.page_content for doc in results]
+
         except Exception as e:
             logging.error(e)
-            return {
-              "query": query,
-              "result": "未在数据库中找到相关信息"
-            }
+            return [f"未在数据库中查到找匹配这个问题的相关信息：{query}"]
 
     @staticmethod
     def _format_path(index_path: str) -> str:

@@ -25,7 +25,7 @@ def create_user(user_id: int, name: str, avatar: str = None, email: str = None, 
             raise e
 
 
-def get_user_by_id(user_id: int) -> User | None:
+def get_user_by_id(user_id: int) -> (User | None):
     with next(get_db()) as db:
         user = db.query(User).filter(User.userId == user_id).first()
         return user

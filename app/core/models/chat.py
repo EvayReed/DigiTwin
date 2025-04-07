@@ -8,7 +8,6 @@ Base = declarative_base()
 
 class ChatRequest(BaseModel):
     query: str
-    index_path: str
 
 
 class ChatMessage(Base):

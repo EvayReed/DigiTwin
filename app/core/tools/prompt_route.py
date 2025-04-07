@@ -27,14 +27,9 @@ class PromptRouterChain:
 
     def run(self, user_input):
         best_prompt_name, selected_prompt = self.route_prompt(user_input)
-        messages = [
-            SystemMessage(content=selected_prompt),
-            HumanMessage(content=user_input)
-        ]
-        response = self.model(messages)
         return {
-            "selected_prompt": best_prompt_name,
-            "response": response.content
+            "selected_prompt": selected_prompt,
+            "best_prompt_name": best_prompt_name
         }
 
 
@@ -52,4 +47,4 @@ if __name__ == "__main__":
     user_input = "我的身份证什么时候到期？"
     result = router_chain.run(user_input)
     print(f"【匹配到的提示词】：{result['selected_prompt']}")
-    print(f"【生成结果】：\n{result['response']}")
+    print(f"【生成结果】：\n{result['best_prompt_name']}")

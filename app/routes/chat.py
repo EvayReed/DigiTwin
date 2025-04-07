@@ -6,6 +6,7 @@ import logging
 from enum import Enum
 
 from app.core.models.chat import ChatRequest
+from app.core.utils.chat import chat
 from app.services.vector_database_server import vector_db_man
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,8 @@ class IndexType(str, Enum):
 @router.post("/chat", summary="Chat with KnowledgeBase", description="Chat with your knowledge base")
 async def query_knowledge_base(request: ChatRequest):
     try:
-        return vector_db_man.query_knowledge_base(request.query, request.index_path)
+        result = chat(request.query, "5452")
+        return result
     except Exception as e:
         logger.error(f"Error in chat_endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
