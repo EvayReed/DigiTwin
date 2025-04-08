@@ -26,6 +26,7 @@ class PlotlyUseTool(BaseTool):
                                "- Scatter/Bar/Line: {x: [...], y: [...]}\n"
                                "- Pie: {names: [...], values: [...]}\n"
                                "- Polar: {r: [...], theta: [...]}",
+                               
     - Automatically selects appropriate visualization parameters
     - Returns both raw data and generated figure object"""
     
