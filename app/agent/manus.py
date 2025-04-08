@@ -9,6 +9,7 @@ from app.tool.browser_use_tool import BrowserUseTool
 from app.tool.python_execute import PythonExecute
 from app.tool.str_replace_editor import StrReplaceEditor
 from app.tool.translater import Translatertool
+from app.tool.plotly_use_tool import PlotlyUseTool
 
 
 class Manus(BrowserAgent):
@@ -35,7 +36,7 @@ class Manus(BrowserAgent):
     available_tools: ToolCollection = Field(
         default_factory=lambda: ToolCollection(
             PythonExecute(), BrowserUseTool(), StrReplaceEditor(), Terminate(),
-            Translatertool()
+            Translatertool(),PlotlyUseTool()
         )
     )
 
