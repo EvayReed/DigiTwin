@@ -14,9 +14,9 @@ def handle_token_validation(token: Optional[str]) -> Optional[int]:
     if not token:
         raise HTTPException(status_code=400, detail="Token is missing or invalid")
 
-    user_id = get_user_by_token(token)
+    user_info = get_user_by_token(token)
 
-    if not user_id:
+    if not user_info:
         raise HTTPException(status_code=400, detail="Token is invalid")
 
-    return user_id
+    return user_info.userId

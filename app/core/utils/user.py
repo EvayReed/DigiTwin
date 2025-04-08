@@ -35,7 +35,7 @@ def get_user_by_token(token: str) -> int:
     with next(get_db()) as db:
         try:
             user = db.query(User).filter(User.token == token).one()
-            return user.userId
+            return user
         except Exception as e:
             raise e
 
