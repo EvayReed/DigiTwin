@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, model_validator
 
 from app.llm import LLM
 from app.logger import logger
-# from app.sandbox.client import SANDBOX_CLIENT
+from app.sandbox.client import SANDBOX_CLIENT
 from app.schema import ROLE_TYPE, AgentState, Memory, Message
 
 
