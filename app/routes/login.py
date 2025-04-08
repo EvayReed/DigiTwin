@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Header
 import logging
 from pydantic import BaseModel
 
-from app.core.utils.user import get_user_config
+from app.core.utils.user import get_user_config, get_user_by_token
 
 router = APIRouter(tags=["Login"])
 logger = logging.getLogger(__name__)
@@ -11,6 +11,14 @@ GOOGLE_API_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo"
 
 
 def verify_google_token(access_token: str):
+    user_info = get_user_by_token(access_token)
+    if user_info:
+        return {
+            "sub": user_info.userId,
+            "name": user_info.name,
+            "picture": user_info.avatar,
+            "email": user_info.email
+        }
     response = requests.get(GOOGLE_API_URL, params={"id_token": access_token})
     if response.status_code != 200:
         raise HTTPException(status_code=401, detail="Invalid token")
