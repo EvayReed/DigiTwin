@@ -16,6 +16,7 @@ from app.tool.web_search import WebSearch
 
 import plotly.express as px
 import pandas as pd
+from plotly.offline import init_notebook_mode,iplot,plot
 
 
 class PlotlyUseTool(BaseTool):
@@ -23,10 +24,9 @@ class PlotlyUseTool(BaseTool):
     description: str = """Generate interactive Plotly visualizations based on data and chart type.
     - generate raw_data in JSON format {x:[],y:[]} for the chart based on the content provided by the user, and generate data according to different types of charts.
     "JSON containing columns matching chart type requirements. Example formats:\n"
-                               "- Scatter/Bar/Line: {x: [...], y: [...]}\n"
+                               "- Scatter/Bar/Line/area: {x: [...], y: [...]}\n"
                                "- Pie: {names: [...], values: [...]}\n"
                                "- Polar: {r: [...], theta: [...]}",
-                               
     - Automatically selects appropriate visualization parameters
     - Returns both raw data and generated figure object"""
     
@@ -120,8 +120,8 @@ class PlotlyUseTool(BaseTool):
                 fig.update_layout(title_text=title)
             # 显示图表
             fig.show()
-            name = title+".png"
-            fig.write_image("./"+name)
+            name = title+".html"
+            fig.write_html("./workspace/"+name)
 
             return {
                 "status": "success",
