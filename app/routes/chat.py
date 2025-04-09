@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException,Header
 from starlette.websockets import WebSocketDisconnect
 from starlette.websockets import WebSocket
 from pydantic import BaseModel
@@ -8,6 +8,7 @@ from enum import Enum
 from app.core.models.chat import ChatRequest
 from app.core.utils.chat import chat
 from app.services.vector_database_server import vector_db_man
+from app.core.utils.validate import get_token_from_header, handle_token_validation
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +40,15 @@ class IndexType(str, Enum):
 
 
 @router.post("/chat", summary="Chat with KnowledgeBase", description="Chat with your knowledge base")
-async def query_knowledge_base(request: ChatRequest):
+async def query_knowledge_base(
+        request: ChatRequest,
+        authorization: str = Header(...),):
     try:
-        result = chat(request.query, "5452")
+        # chatroom -> userid
+        token = get_token_from_header(authorization)
+        user_id = handle_token_validation(token)
+        # result = chat(request.query, "5452")
+        result = chat(request.query, user_id)
         return result
     except Exception as e:
         logger.error(f"Error in chat_endpoint: {str(e)}")

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
+from fastapi import APIRouter, File, UploadFile, HTTPException, Depends,Header
 from fastapi.responses import JSONResponse
 import base64
 
@@ -6,6 +6,7 @@ from app.core.utils.image_reader import ocr_request
 from app.routes.chat import IndexType
 from app.services.vector_database_server import vector_db_man
 import logging
+from app.core.utils.validate import get_token_from_header, handle_token_validation
 
 router = APIRouter(tags=["upload files"])
 logger = logging.getLogger(__name__)
@@ -13,11 +14,17 @@ logger = logging.getLogger(__name__)
 
 @router.post("/add-file")
 async def add_file(
-        index_path: IndexType,
+        # delete
+        # index_path: IndexType,
+        authorization: str = Header(...),
         file: UploadFile = File(...),
 ):
     try:
-        result = await vector_db_man.insert_into_vector_db(file, index_path)
+        # indexpath -> userid
+        token = get_token_from_header(authorization)
+        user_id = handle_token_validation(token)
+        # result = await vector_db_man.insert_into_vector_db(file, index_path)
+        result = await vector_db_man.insert_into_vector_db(file, user_id)
         return {"message": "File uploaded successfully", "content": result}
     except ValueError as e:
         logger.error(f"ValueError in add_file: {str(e)}")

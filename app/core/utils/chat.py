@@ -8,8 +8,9 @@ from app.core.tools.prompt_route import PromptRouterChain
 from app.services.database_service import get_db
 from app.services.llm_service import ai_engine
 from app.services.vector_database_server import vector_db_man
+import logging
 
-
+logger = logging.getLogger("my_app")
 def chat(query: str, chat_room_id: str) -> str:
     with next(get_db()) as session:
         llm = ai_engine.get_openai_model()
@@ -29,7 +30,7 @@ def chat(query: str, chat_room_id: str) -> str:
                 elif msg.role == "ai":
                     history.append(AIMessage(content=msg.content))
 
-            response = generateResponse(history, query)
+            response = generateResponse(history, query, chat_room_id)
             print(response)
 
             history.append(HumanMessage(content=query))
@@ -70,20 +71,24 @@ class ToolResponse:
         self.content = content
 
 
-def generateMonthlyLedger(history: List[BaseMessage], query: str, prompt: str) -> ToolResponse:
+def generateMonthlyLedger(history: List[BaseMessage], query: str, prompt: str,userid: str) -> ToolResponse:
     llm = ai_engine.get_openai_model()
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    refers = ";".join(vector_db_man.query_knowledge_base(f"当前时间是: {current_time},{query}", "Private"))
+    # Private改成userid
+    # refers = ";".join(vector_db_man.query_knowledge_base(f"当前时间是: {current_time},{query}", "Private"))
+    refers = ";".join(vector_db_man.query_knowledge_base(f"当前时间是: {current_time},{query}", userid))
     history.append(HumanMessage(content=refers))
     history.append(HumanMessage(content=prompt))
     history.append(HumanMessage(content=query))
+    # print(history)
+    # logger.info(logger)
     return llm(history)
 
 
-def generateResponse(history: List[BaseMessage], query: str) -> ToolResponse:
+def generateResponse(history: List[BaseMessage], query: str,userid: str) -> ToolResponse:
     router_chain = PromptRouterChain(credentials_tool_dict)
     tool_info = router_chain.run(query)
-    return generateMonthlyLedger(history, query, tool_info["selected_prompt"])
+    return generateMonthlyLedger(history, query, tool_info["selected_prompt"],userid)
 
 
 
