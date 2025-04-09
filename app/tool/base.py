@@ -23,7 +23,7 @@ class BaseTool(ABC, BaseModel):
     def to_param(self) -> Dict:
         """Convert tool to function call format."""
         return {
-            "type": "function",
+            "type": "function", #33
             "function": {
                 "name": self.name,
                 "description": self.description,
