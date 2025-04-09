@@ -33,11 +33,8 @@ def get_user_by_id(user_id: int) -> (User | None):
 
 def get_user_by_token(token: str) -> int:
     with next(get_db()) as db:
-        try:
-            user = db.query(User).filter(User.token == token).one()
-            return user
-        except Exception as e:
-            raise e
+        user = db.query(User).filter(User.token == token).first()
+        return user
 
 
 def update_user_token(user_id: int, token: str) -> User:
