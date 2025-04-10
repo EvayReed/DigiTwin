@@ -16,7 +16,7 @@ async def add_file(
         file: UploadFile = File(...),
 ):
     try:
-        result = await vector_db_man.insert_into_vector_db(file, "234211243123")
+        result = await vector_db_man.insert_into_vector_db(file, "sdm")
         return {"message": "File uploaded successfully", "content": result}
     except ValueError as e:
         logger.error(f"ValueError in add_file: {str(e)}")
