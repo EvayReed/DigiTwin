@@ -41,7 +41,7 @@ class IndexType(str, Enum):
 @router.post("/chat", summary="Chat with KnowledgeBase", description="Chat with your knowledge base")
 async def query_knowledge_base(request: ChatRequest):
     try:
-        result = chat(request.query, "5452")
+        result = chat(request.query, "234211243123")
         return result
     except Exception as e:
         logger.error(f"Error in chat_endpoint: {str(e)}")
