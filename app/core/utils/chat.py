@@ -75,7 +75,6 @@ def generateMonthlyLedger(history: List[BaseMessage], query: str, prompt: str,us
     llm = ai_engine.get_openai_model()
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     # Private改成userid
-    # refers = ";".join(vector_db_man.query_knowledge_base(f"当前时间是: {current_time},{query}", "Private"))
     refers = ";".join(vector_db_man.query_knowledge_base(f"当前时间是: {current_time},{query}", userid))
     history.append(HumanMessage(content=refers))
     history.append(HumanMessage(content=prompt))

@@ -23,7 +23,6 @@ async def add_file(
         # indexpath -> userid
         token = get_token_from_header(authorization)
         user_id = handle_token_validation(token)
-        # result = await vector_db_man.insert_into_vector_db(file, index_path)
         result = await vector_db_man.insert_into_vector_db(file, user_id)
         return {"message": "File uploaded successfully", "content": result}
     except ValueError as e:
