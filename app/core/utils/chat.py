@@ -77,7 +77,7 @@ def generateMonthlyLedger(history: List[BaseMessage], query: str, prompt: str) -
     history.append(HumanMessage(content=refers))
     history.append(HumanMessage(content=prompt))
     history.append(HumanMessage(content=query))
-    return llm(history)
+    return llm.invoke(history)
 
 
 def generateResponse(history: List[BaseMessage], query: str) -> ToolResponse:

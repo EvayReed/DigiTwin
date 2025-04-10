@@ -13,11 +13,10 @@ logger = logging.getLogger(__name__)
 
 @router.post("/add-file")
 async def add_file(
-        index_path: IndexType,
         file: UploadFile = File(...),
 ):
     try:
-        result = await vector_db_man.insert_into_vector_db(file, index_path)
+        result = await vector_db_man.insert_into_vector_db(file, "234211243123")
         return {"message": "File uploaded successfully", "content": result}
     except ValueError as e:
         logger.error(f"ValueError in add_file: {str(e)}")
