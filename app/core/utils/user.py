@@ -33,7 +33,7 @@ def get_user_by_id(user_id: int) -> (User | None):
 
 def get_user_by_token(token: str) -> int:
     with next(get_db()) as db:
-        user = db.query(User).filter(User.token == token).first()
+        user = db.query(User).filter(User.token == token[:255]).first()
         return user
 
 
