@@ -47,7 +47,6 @@ async def query_knowledge_base(
         # chatroom -> userid
         token = get_token_from_header(authorization)
         user_id = handle_token_validation(token)
-        # result = chat(request.query, "5452")
         result = chat(request.query, user_id)
         return result
     except Exception as e:
