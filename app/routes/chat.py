@@ -6,6 +6,7 @@ import logging
 from enum import Enum
 
 from app.core.models.chat import ChatRequest
+from app.core.utils.chart import chart
 from app.core.utils.chat import chat
 from app.services.vector_database_server import vector_db_man
 
@@ -43,6 +44,25 @@ async def query_knowledge_base(request: ChatRequest):
     try:
         result = chat(request.query, "sdm")
         return result
+    except Exception as e:
+        logger.error(f"Error in chat_endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/getChartDataIfNeeded", summary="getChartDataIfNeeded",
+             description="The purpose of this method is to "
+                         "determine whether the chart chart "
+                         "needs to be generated, if it does, "
+                         "it returns the chart data, "
+                         "and if it does not, it returns "
+                         "false"
+)
+async def getChartDataIfNeeded(request: ChatRequest):
+    try:
+        result = chart(request.query)
+        return {
+            "result": result,
+        }
     except Exception as e:
         logger.error(f"Error in chat_endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
