@@ -79,7 +79,8 @@ class VectorDatabaseManager:
                 os.unlink(tmp_path)
 
     def query_knowledge_base(self, query: str, index_path: str) -> List[str]:
-        index_path = self._format_path(f"IndexType.{index_path}")
+        # index_path = self._format_path(f"IndexType.{index_path}")
+        index_path = self._format_path(index_path)
         logging.error(index_path)
         try:
             db = FAISS.load_local(index_path, ai_engine.get_embedding_model(), allow_dangerous_deserialization=True)

@@ -15,15 +15,13 @@ logger = logging.getLogger(__name__)
 @router.post("/add-file")
 async def add_file(
         # delete
-        # index_path: IndexType,
         authorization: str = Header(...),
         file: UploadFile = File(...),
 ):
     try:
-        # indexpath -> userid
         token = get_token_from_header(authorization)
         user_id = handle_token_validation(token)
-        result = await vector_db_man.insert_into_vector_db(file, user_id)
+        result = await vector_db_man.insert_into_vector_db(file, f'user_{user_id}')
         return {"message": "File uploaded successfully", "content": result}
     except ValueError as e:
         logger.error(f"ValueError in add_file: {str(e)}")
@@ -31,6 +29,18 @@ async def add_file(
     except Exception as e:
         logger.error(f"Unexpected error in add_file: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+# @router.post("/add-file-test")
+# async def add_file(
+#         authorization: str = Header(...),
+#         file: UploadFile = File(...),
+# ):
+#     token = get_token_from_header(authorization)
+#     user_id = handle_token_validation(token)
+#     print(user_id)
+#     result = await vector_db_man.insert_into_vector_db(file, f'user_{user_id}')
+#     return {"message": "File uploaded successfully", "content": result}
+
 
 
 @router.post("/describe-image/")
