@@ -53,6 +53,22 @@ async def query_knowledge_base(
         logger.error(f"Error in chat_endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/add-str")
+async def add_str(
+        request: ChatRequest,
+        authorization: str = Header(...),
+        ):
+    try:
+        token = get_token_from_header(authorization)
+        user_id = handle_token_validation(token)
+        result = await vector_db_man.insert_into_vector_db_str(request.query, f'user_{user_id}')
+        return {"message": "str uploaded successfully", "content": result}
+    except ValueError as e:
+        logger.error(f"ValueError in add_str: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Unexpected error in add_file: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.websocket("/wsChat")
 async def websocket_endpoint(websocket: WebSocket):
