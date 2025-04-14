@@ -2,13 +2,17 @@ from fastapi import APIRouter, HTTPException
 from starlette.websockets import WebSocketDisconnect
 from starlette.websockets import WebSocket
 from pydantic import BaseModel
+from fastapi.responses import StreamingResponse
+import asyncio
 import logging
 from enum import Enum
+from langchain_openai import ChatOpenAI
+from dotenv import load_dotenv
+load_dotenv()
 
 from app.core.models.chat import ChatRequest
 from app.core.utils.chart import chart
 from app.core.utils.chat import chat
-from app.services.vector_database_server import vector_db_man
 
 logger = logging.getLogger(__name__)
 
@@ -27,16 +31,26 @@ class IndexType(str, Enum):
     Wealth = "Wealth"
 
 
-# @router.post("/chat",
-#              summary="Chat with AI",
-#              description="Simple conversation with AI")
-# async def chat_endpoint(chat_message: ChatMessage):
-#     try:
-#         response = await ai_engine.reply(chat_message.message)
-#         return {"code": 200, "message": response}
-#     except Exception as e:
-#         logger.error(f"Error in chat_endpoint: {str(e)}")
-#         raise HTTPException(status_code=500, detail=str(e))
+@router.post("/aiChat", summary="Chat with AI", description="Simple conversation with AI")
+async def chat_endpoint(chat_message: ChatMessage):
+    try:
+        llm = ChatOpenAI(
+            model="gpt-4o-mini",
+            temperature=0,
+            max_retries=2
+        )
+
+        async def generate():
+            stream = llm.stream(chat_message.message)
+            async for chunk in stream:
+                yield chunk
+                await asyncio.sleep(0)
+
+        return StreamingResponse(generate(), media_type="text/plain")
+
+    except Exception as e:
+        logger.error(f"Error in chat_endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/chat", summary="Chat with KnowledgeBase", description="Chat with your knowledge base")

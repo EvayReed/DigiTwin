@@ -1,6 +1,6 @@
 from langchain.prompts import PromptTemplate
 
-HINT = "你觉得我可能还会问你什么问题，请把你猜测的可能的问题用^号分隔开告诉我，除了答案不要有类似‘好的，我会尽量猜测你可能会问的问题。以下是我的猜测：’这样的的字符出现"
+HINT = "你觉得我可能还会问你什么问题，请猜测3个可能的问题用^号分隔开告诉我，除了答案不要有类似‘好的，我会尽量猜测你可能会问的问题。以下是我的猜测：’这样的的字符出现"
 
 echarts_eligibility_prompt = PromptTemplate.from_template("""
 根据以下内容分析是否具备绘制 ECharts 图表的条件和数据：{query}；请回答 0（不具备）或 1（具备）；只能回答一个字符。
