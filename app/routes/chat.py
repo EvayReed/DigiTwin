@@ -8,6 +8,9 @@ import logging
 from enum import Enum
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
+
+from app.services.vector_database_server import vector_db_man
+
 load_dotenv()
 
 from app.core.models.chat import ChatRequest
@@ -57,6 +60,16 @@ async def chat_endpoint(chat_message: ChatMessage):
 async def query_knowledge_base(request: ChatRequest):
     try:
         result = chat(request.query, "sdm")
+        return result
+    except Exception as e:
+        logger.error(f"Error in chat_endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/queryRag", summary="Chat with KnowledgeBase", description="Chat with your knowledge base")
+async def query_knowledge_base(request: ChatRequest):
+    try:
+        result = vector_db_man.query_knowledge_base(request.query, "sdm")
         return result
     except Exception as e:
         logger.error(f"Error in chat_endpoint: {str(e)}")

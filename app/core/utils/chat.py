@@ -74,11 +74,11 @@ class ToolResponse:
 def generateMonthlyLedger(history: List[BaseMessage], query: str, prompt: str) -> ToolResponse:
     llm = ai_engine.get_openai_model()
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    refers = ";".join(vector_db_man.query_knowledge_base(f"当前时间是: {current_time},{query}", "sdm"))
+    refers = ";".join(vector_db_man.query_knowledge_base(query, "sdm"))
     logging.error(f"{query}查询到的相关信息：{refers}")
     history.append(HumanMessage(content=refers))
     history.append(HumanMessage(content=prompt))
-    history.append(HumanMessage(content=query))
+    history.append(HumanMessage(content=f"{query}(此刻是{current_time})"))
     return llm.invoke(history)
 
 
