@@ -84,7 +84,7 @@ class VectorDatabaseManager:
         try:
             db = FAISS.load_local(index_path, ai_engine.get_embedding_model(), allow_dangerous_deserialization=True)
 
-            results = db.similarity_search(query, k=1)
+            results = db.similarity_search(query, k=10)
 
             return [doc.page_content for doc in results]
 
