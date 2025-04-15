@@ -1,11 +1,10 @@
 import logging
 from datetime import datetime
 from typing import List
-from langchain.schema import BaseMessage, HumanMessage, AIMessage, SystemMessage
-
+from langchain.schema import BaseMessage, HumanMessage, AIMessage
 from app.core.models.chat import ChatMessage
 from app.core.prompts.credentials import credentials_tool_dict
-from app.core.prompts.system import HINT, main_prompt
+from app.core.prompts.system import HINT
 from app.core.tools.prompt_route import PromptRouterChain
 from app.services.database_service import get_db
 from app.services.llm_service import ai_engine
@@ -32,10 +31,13 @@ def chat(query: str, chat_room_id: str) -> str:
                     history.append(AIMessage(content=msg.content))
 
             response = generateResponse(history, query)
-            hint_result = llm([
-                HumanMessage(content=query),
-                HumanMessage(content=HINT)
-            ])
+            print(response)
+
+            history.append(HumanMessage(content=query))
+            history.append(AIMessage(content=response.content))
+            history.append(HumanMessage(content=HINT))
+            hint_result = llm(history)
+            print(hint_result.content)
 
             user_msg = ChatMessage(
                 chat_room_id=chat_room_id,
@@ -84,17 +86,6 @@ def generateResponse(history: List[BaseMessage], query: str) -> ToolResponse:
     router_chain = PromptRouterChain(credentials_tool_dict)
     tool_info = router_chain.run(query)
     return generateMonthlyLedger(history, query, tool_info["selected_prompt"])
-
-
-def generateResponse2(history: List[BaseMessage], query: str) -> ToolResponse:
-    llm = ai_engine.get_openai_model()
-    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    refers = ";".join(vector_db_man.query_knowledge_base(query, "sdm"))
-    logging.error(f"{query}查询到的相关信息：{refers}")
-    history.append(HumanMessage(content=f"可能与以下问题相关的信息：{refers}"))
-    history.append(SystemMessage(content=main_prompt))
-    history.append(HumanMessage(content=f"{query}(此刻是{current_time})"))
-    return llm.invoke(history)
 
 
 
