@@ -31,7 +31,7 @@ def chat(query: str, chat_room_id: str) -> str:
                 elif msg.role == "ai":
                     history.append(AIMessage(content=msg.content))
 
-            response = generateResponse2(history, query)
+            response = generateResponse(history, query)
             hint_result = llm([
                 HumanMessage(content=query),
                 HumanMessage(content=HINT)
