@@ -1,3 +1,6 @@
+from datetime import datetime
+import os
+
 from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
 from fastapi.responses import JSONResponse
 import base64
@@ -34,3 +37,31 @@ async def describe_image_endpoint(file: UploadFile = File(...)):
     image_content, res_dict = ocr_request(base64_string)
 
     return JSONResponse(content={"description": res_dict, "image_content": image_content})
+
+assets_folder = "assets"
+if not os.path.exists(assets_folder):
+    os.makedirs(assets_folder)
+
+
+@router.post("/upload/")
+async def upload_image(file: UploadFile = File(...)):
+    try:
+        # 获取文件的扩展名
+        file_extension = file.filename.split('.')[-1]
+
+        # 获取当前时间戳并构造新的文件名
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        new_filename = f"{timestamp}.{file_extension}"
+
+        # 构造文件保存路径
+        file_path = os.path.join(assets_folder, new_filename)
+
+        # 将文件保存到指定路径
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
+
+        return JSONResponse(content={"message": "File uploaded successfully", "filename": new_filename},
+                            status_code=200)
+
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)

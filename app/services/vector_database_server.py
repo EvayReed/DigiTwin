@@ -9,7 +9,7 @@ from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQA
 
-SUPPORTED_EXTENSIONS = {".pdf", ".txt", ".doc", ".docx", ".xls", ".xlsx"}
+SUPPORTED_EXTENSIONS = {".pdf", ".txt", ".doc", ".docx", ".xls", ".xlsx", ".md"}
 
 
 def format_text(file_path: str):
@@ -83,13 +83,8 @@ class VectorDatabaseManager:
         logging.error(index_path)
         try:
             db = FAISS.load_local(index_path, ai_engine.get_embedding_model(), allow_dangerous_deserialization=True)
-            qa = RetrievalQA.from_chain_type(
-                llm=ai_engine.get_chat_model(),
-                chain_type="stuff",
-                retriever=db.as_retriever(search_kwargs={"k": 4})
-            )
 
-            results = db.similarity_search(query, k=10)
+            results = db.similarity_search(query, k=1)
 
             return [doc.page_content for doc in results]
 

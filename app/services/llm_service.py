@@ -6,7 +6,7 @@ load_dotenv()
 class AIEngine:
     def __init__(self):
         self.llm = ChatOpenAI(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             temperature=0,
             max_retries=2
         )
