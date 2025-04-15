@@ -1,10 +1,11 @@
 from datetime import datetime
+from pathlib import Path
+import shutil
 import os
 
-from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
+from fastapi import APIRouter, File, UploadFile, HTTPException, Request
 from fastapi.responses import JSONResponse
 import base64
-
 from app.core.utils.image_reader import ocr_request
 from app.routes.chat import IndexType
 from app.services.vector_database_server import vector_db_man
@@ -43,25 +44,50 @@ if not os.path.exists(assets_folder):
     os.makedirs(assets_folder)
 
 
+UPLOAD_DIR = Path("assets")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+
 @router.post("/upload/")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_file(request: Request):
     try:
-        # 获取文件的扩展名
-        file_extension = file.filename.split('.')[-1]
+        # 获取请求体中的原始数据
+        body = await request.body()
 
-        # 获取当前时间戳并构造新的文件名
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        new_filename = f"{timestamp}.{file_extension}"
+        # 设置文件名（这里可以自定义）
+        file_location = UPLOAD_DIR / "uploaded_file.txt"
 
-        # 构造文件保存路径
-        file_path = os.path.join(assets_folder, new_filename)
+        # 保存文件到指定目录
+        with file_location.open("wb") as buffer:
+            buffer.write(body)
 
-        # 将文件保存到指定路径
-        with open(file_path, "wb") as f:
-            f.write(await file.read())
+        # 返回成功响应
+        return JSONResponse(content={"message": "File uploaded successfully", "file_name": file_location.name})
 
-        return JSONResponse(content={"message": "File uploaded successfully", "filename": new_filename},
+    except Exception as e:
+        # 出现错误时返回错误信息
+        return JSONResponse(status_code=500, content={"error": f"Upload failed: {str(e)}"})
+
+
+@router.post("/upload_image/")
+async def upload_file(request: Request):
+    try:
+        file_name = request.query_params.get("file_name")
+
+        if not file_name:
+            return JSONResponse(content={"message": "File name is required"}, status_code=400)
+
+        file_content = await request.body()
+
+        logging.error(file_content)
+        logging.error(file_name)
+
+        file_location = f"assets/{file_name}"
+        with open(file_location, "wb") as f:
+            f.write(file_content)
+
+        return JSONResponse(content={"message": "File uploaded successfully", "file_path": file_location},
                             status_code=200)
 
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=500)
+        return JSONResponse(content={"message": str(e)}, status_code=500)
