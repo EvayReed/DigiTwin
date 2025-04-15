@@ -34,4 +34,4 @@ def export_rag_contents(index_path: str, embeddings) -> List[Dict]:
     print(documents)
     return documents
 
-export_rag_contents("./store/user_2354365767", ai_engine.get_embedding_model())
+export_rag_contents("../store/user_2354365767", ai_engine.get_embedding_model())
