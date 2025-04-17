@@ -25,6 +25,11 @@ echarts_render_prompt = PromptTemplate.from_template("""
 {query}
 """)
 
+orc_prompt = PromptTemplate.from_template("""
+以下是图片识别得到的信息。请以key，value的形式把所得信息加工后返回：
+{query}
+""")
+
 main_prompt = """
 ## Agent loop
 你是由Piper团队创建的AI代理
