@@ -28,7 +28,8 @@ def ocr_request(encoded_string):
             # 如果返回的是 JSON 数据，可以解析一下：
             try:
                 logging.error(f"status_code状态码：{response2.status_code}")
-                logging.error("响应内容text：", response2.text)
+                res_dict = json.loads(response2.text.data)
+                logging.error(f"这个出来就对了：{res_dict.get("data")}")
                 data = response2.json()
                 logging.error("返回数据：", data)
             except ValueError:
@@ -42,10 +43,10 @@ def ocr_request(encoded_string):
             input_variables=["content"],
             template="以下是图片识别得到的信息。请以key，value的形式把所得信息加工后返回：{content}"
         )
-        logging.error("这里是图片信息", res_dict)
+        logging.error("这里是图片信息", res_dict.get("data"))
         chain = prompt_template | ai_engine.get_openai_model()
 
-        image_content = chain.invoke({"content": res_dict})
+        image_content = chain.invoke({"content": res_dict.get("data")})
         return image_content, res_dict
     except requests.exceptions.RequestException as e:
         logging.error(f"Request failed: {e}", e)
