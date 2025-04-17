@@ -22,7 +22,19 @@ def ocr_request(encoded_string):
 
     try:
         response = requests.post(url, data=data_str, headers=headers)
-        response.raise_for_status()  # 如果响应返回错误状态码，抛出异常
+        response2 = requests.post("http://localhost:1224/api/ocr", data=data_str, headers=headers)
+        if response2.status_code == 200:
+            logging.error("请求成功")
+            # 如果返回的是 JSON 数据，可以解析一下：
+            try:
+                data = response2.json()
+                logging.error("返回数据：", data)
+            except ValueError:
+                logging.error("返回的不是有效的 JSON")
+        else:
+            logging.error(f"请求失败，状态码：{response2.status_code}")
+            logging.error("响应内容：", response2.text)
+        response.raise_for_status()
         res_dict = json.loads(response.text)
         prompt_template = PromptTemplate(
             input_variables=["content"],
@@ -34,5 +46,6 @@ def ocr_request(encoded_string):
         image_content = chain.invoke({"content": res_dict})
         return image_content, res_dict
     except requests.exceptions.RequestException as e:
+        logging.error(f"Request failed: {e}", e)
         print(f"Request failed: {e}")
         return None
