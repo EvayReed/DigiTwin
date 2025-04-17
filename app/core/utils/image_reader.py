@@ -24,7 +24,7 @@ def ocr_request(encoded_string):
         response.raise_for_status()
         res_dict = json.loads(response.text)
         image_info = res_dict.get("data")
-        logging.error("=================================================================================================", image_info)
+        logging.error("image_info=================================================", image_info)
         llm = ai_engine.get_openai_model()
         chart_code = llm.invoke(orc_prompt.format(query=image_info))
         image_content = chart_code.content.strip()

@@ -26,8 +26,8 @@ echarts_render_prompt = PromptTemplate.from_template("""
 """)
 
 orc_prompt = PromptTemplate.from_template("""
-以下是图片识别得到的信息。请以key，value的形式把所得信息加工后返回：
-{query}
+{query};
+解析以上信息,以'[{"label":"姓名","value":"张三"},{"label":"年龄","value":"18"}]'这种格式整理给我;
 """)
 
 main_prompt = """
