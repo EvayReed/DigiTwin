@@ -8,7 +8,7 @@ from app.services.llm_service import ai_engine
 
 
 def ocr_request(encoded_string):
-    url = "http://34.28.35.204:1224/api/ocr"
+    url = "http://127.0.0.1:1224/api/ocr"
     data = {
         "base64": encoded_string,
         # 可选参数示例
