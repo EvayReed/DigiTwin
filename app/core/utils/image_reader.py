@@ -27,6 +27,8 @@ def ocr_request(encoded_string):
             logging.error("请求成功")
             # 如果返回的是 JSON 数据，可以解析一下：
             try:
+                logging.error(f"status_code状态码：{response2.status_code}")
+                logging.error("响应内容text：", response2.text)
                 data = response2.json()
                 logging.error("返回数据：", data)
             except ValueError:
