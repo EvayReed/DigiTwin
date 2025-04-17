@@ -82,27 +82,27 @@ async def upload_file(request: Request):
         file_location = f"assets/{file_name}"
         with open(file_location, "wb") as f:
             f.write(file_content)
-        try:
-            file_base64 = base64.b64encode(file_content).decode('utf-8')
-            image_content, res_dict = ocr_request(file_base64)
-            logging.error(image_content)
-            logging.error(res_dict)
-        except Exception as e:
-            logging.error(str(e))
-        return JSONResponse(content={
-            "message": "File uploaded successfully",
-            "file_path": file_location,
-        }, status_code=200)
-
-        # file_base64 = base64.b64encode(file_content).decode('utf-8')
-        # image_content, res_dict = ocr_request(file_base64)
-        #
+        # try:
+        #     file_base64 = base64.b64encode(file_content).decode('utf-8')
+        #     image_content, res_dict = ocr_request(file_base64)
+        #     logging.error(image_content)
+        #     logging.error(res_dict)
+        # except Exception as e:
+        #     logging.error(str(e))
         # return JSONResponse(content={
         #     "message": "File uploaded successfully",
         #     "file_path": file_location,
-        #     "image_content": image_content,
-        #     "res_dict": res_dict
         # }, status_code=200)
+
+        file_base64 = base64.b64encode(file_content).decode('utf-8')
+        image_content, res_dict = ocr_request(file_base64)
+
+        return JSONResponse(content={
+            "message": "File uploaded successfully",
+            "file_path": file_location,
+            "image_content": image_content,
+            "res_dict": res_dict
+        }, status_code=200)
 
     except Exception as e:
         return JSONResponse(content={"message": str(e)}, status_code=500)
