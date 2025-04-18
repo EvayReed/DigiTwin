@@ -2,6 +2,7 @@ from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 import logging
 from app.routes.pdfprocessor import PDFProcessor
+from app.services.vector_database_server import vector_db_man
 import os
 from pathlib import Path
 
@@ -26,6 +27,7 @@ async def upload_pdf(file: UploadFile = File(...)):
         - 表格数据
         - 带元数据的表格
         - 处理状态
+        - 向量数据库存储结果
     """
     try:
         # 检查文件类型
@@ -49,6 +51,45 @@ async def upload_pdf(file: UploadFile = File(...)):
         tables = processor.extract_tables()
         tables_with_metadata = processor.extract_tables_with_metadata()
         
+        # 将文本内容存储到向量数据库
+        try:
+            # 使用提取的文本内容创建临时文件
+            temp_file_path = UPLOAD_DIR / "temp_file.txt"
+            with open(temp_file_path, "w", encoding="utf-8") as f:
+                f.write(text)
+            
+            # 创建 UploadFile 对象，指定为文本文件
+            from fastapi import UploadFile
+            from io import BytesIO
+            
+            # 读取临时文件内容
+            with open(temp_file_path, "rb") as f:
+                content = f.read()
+            
+            # 创建新的 UploadFile 对象
+            text_file = UploadFile(
+                file=BytesIO(content),
+                filename="temp_file.txt",
+                content_type="text/plain"
+            )
+            
+            # 使用文本文件进行向量数据库存储
+            db_result = await vector_db_man.insert_into_vector_db(text_file, "pdf")
+            
+            # 删除临时文件
+            os.remove(temp_file_path)
+            
+            vector_db_status = "success"
+            vector_db_message = "向量数据库存储成功"
+        except Exception as db_error:
+            logger.error(f"向量数据库存储失败: {str(db_error)}")
+            vector_db_status = "error"
+            vector_db_message = str(db_error)
+            db_result = None
+            # 确保临时文件被删除
+            if os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
+        
         return JSONResponse(content={
             "status": "success",
             "message": "PDF处理成功",
@@ -60,6 +101,11 @@ async def upload_pdf(file: UploadFile = File(...)):
             "tables": {
                 "simple_tables": tables,
                 "tables_with_metadata": tables_with_metadata
+            },
+            "vector_db": {
+                "status": vector_db_status,
+                "message": vector_db_message,
+                "result": db_result
             }
         })
         
