@@ -19,7 +19,7 @@ def chat(query: str, chat_room_id: str) -> str:
             past_msgs = session.query(ChatMessage) \
                 .filter_by(chat_room_id=chat_room_id) \
                 .order_by(ChatMessage.timestamp.desc()) \
-                .limit(10) \
+                .limit(4) \
                 .all()
 
             past_msgs.reverse()
@@ -84,8 +84,8 @@ def append_context(context_texts=None):
 def generateMonthlyLedger(history: List[BaseMessage], query: str, prompt: str) -> ToolResponse:
     llm = ai_engine.get_openai_model()
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    # refers = append_context(vector_db_man.query_knowledge_base(query, "sdm"))
-    refers = get_refer(query)
+    refers = append_context(vector_db_man.query_knowledge_base(query, "sdm"))
+    # refers = get_refer(query)
     logging.error(f"{query}查询到的相关信息：{refers}")
     # messages = [SystemMessage(content=f"此刻是{current_time}{main_prompt}{refers}")]
     messages = [SystemMessage(content=f"此刻是{current_time}{prompt}{refers}")]
