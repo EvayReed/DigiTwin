@@ -47,6 +47,7 @@ async def add_file(
 async def describe_image_endpoint(file: UploadFile = File(...)):
     file_content = await file.read()
     base64_string = base64.b64encode(file_content).decode('utf-8')
+    logging.error(base64_string)
 
     image_content, res_dict = ocr_request(base64_string)
 
