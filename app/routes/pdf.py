@@ -1,10 +1,11 @@
-from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi import APIRouter, File, UploadFile, HTTPException,Header
 from fastapi.responses import JSONResponse
 import logging
 from app.routes.pdfprocessor import PDFProcessor
 from app.services.vector_database_server import vector_db_man
 import os
 from pathlib import Path
+from app.core.utils.validate import get_token_from_header, handle_token_validation
 
 router = APIRouter(tags=["pdf processing"])
 logger = logging.getLogger(__name__)
@@ -15,7 +16,8 @@ UPLOAD_DIR = Path("assets/pdfs")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 @router.post("/upload-pdf/")
-async def upload_pdf(file: UploadFile = File(...)):
+async def upload_pdf(file: UploadFile = File(...),
+            authorization: str = Header(...),):
     """上传PDF文件并处理，返回所有提取的内容
     
     Args:
@@ -53,42 +55,28 @@ async def upload_pdf(file: UploadFile = File(...)):
         
         # 将文本内容存储到向量数据库
         try:
-            # 使用提取的文本内容创建临时文件
-            temp_file_path = UPLOAD_DIR / "temp_file.txt"
-            with open(temp_file_path, "w", encoding="utf-8") as f:
-                f.write(text)
-            
-            # 创建 UploadFile 对象，指定为文本文件
-            from fastapi import UploadFile
-            from io import BytesIO
-            
-            # 读取临时文件内容
-            with open(temp_file_path, "rb") as f:
-                content = f.read()
-            
-            # 创建新的 UploadFile 对象
-            text_file = UploadFile(
-                file=BytesIO(content),
-                filename="temp_file.txt",
-                content_type="text/plain"
-            )
-            
-            # 使用文本文件进行向量数据库存储
-            db_result = await vector_db_man.insert_into_vector_db(text_file, "pdf")
-            
-            # 删除临时文件
-            os.remove(temp_file_path)
-            
-            vector_db_status = "success"
-            vector_db_message = "向量数据库存储成功"
-        except Exception as db_error:
-            logger.error(f"向量数据库存储失败: {str(db_error)}")
-            vector_db_status = "error"
-            vector_db_message = str(db_error)
-            db_result = None
-            # 确保临时文件被删除
-            if os.path.exists(temp_file_path):
-                os.remove(temp_file_path)
+            token = get_token_from_header(authorization)
+            user_id = handle_token_validation(token)
+            result = await vector_db_man.insert_into_vector_db_str(text, f'user_{user_id}')
+            vector_db_state = {
+                "message": "str uploaded successfully",
+                "status": "success",
+                "user_id": user_id
+            }
+        except ValueError as e:
+            logger.error(f"ValueError in vector db storage: {str(e)}")
+            vector_db_state = {
+                "message": str(e),
+                "status": "error",
+                "error_type": "ValueError"
+            }
+        except Exception as e:
+            logger.error(f"Unexpected error in vector db storage: {str(e)}")
+            vector_db_state = {
+                "message": "Internal server error",
+                "status": "error",
+                "error_type": "UnexpectedError"
+            }
         
         return JSONResponse(content={
             "status": "success",
@@ -102,11 +90,7 @@ async def upload_pdf(file: UploadFile = File(...)):
                 "simple_tables": tables,
                 "tables_with_metadata": tables_with_metadata
             },
-            "vector_db": {
-                "status": vector_db_status,
-                "message": vector_db_message,
-                "result": db_result
-            }
+            "vector_db": vector_db_state
         })
         
     except Exception as e:

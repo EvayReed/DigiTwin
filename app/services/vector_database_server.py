@@ -8,6 +8,9 @@ from app.services.llm_service import ai_engine
 from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQA
+from tempfile import NamedTemporaryFile
+from datetime import datetime
+
 
 SUPPORTED_EXTENSIONS = {".pdf", ".txt", ".doc", ".docx", ".xls", ".xlsx", ".md"}
 
@@ -127,6 +130,22 @@ class VectorDatabaseManager:
             content = await file.read()
             tmp.write(content)
             return tmp.name
+        
+    async def insert_into_vector_db_str(self,content: str,index_path: str) -> List[str]:
+        # 创建符合 UploadFile 接口的临时文件
+        timestamp_str = datetime.now().strftime("%Y%m%d%H%M%S%f")[:-3]
+        tmp_file = NamedTemporaryFile(delete=False, suffix=".txt")
+        tmp_file.write(content.encode('utf-8'))
+        tmp_file.close()
+        filename = f'{timestamp_str}_str.txt'
+        # 包装为 UploadFile 对象
+        upload_file = UploadFile(
+            file=open(tmp_file.name, "rb"),
+            filename=filename
+        )
+
+        # 调用时传递正确类型
+        return await self.insert_into_vector_db(upload_file, index_path)
 
 
 vector_db_man = VectorDatabaseManager()
