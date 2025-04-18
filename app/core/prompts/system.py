@@ -27,7 +27,7 @@ echarts_render_prompt = PromptTemplate.from_template("""
 
 orc_prompt = PromptTemplate.from_template("""
 {query};
-解析以上信息,以'[{"label":"姓名","value":"张三"},{"label":"年龄","value":"18"}]'这种格式整理给我;
+解析以上信息,整理成一个数组，其中元素为key和value的形式给我;
 """)
 
 main_prompt = """
