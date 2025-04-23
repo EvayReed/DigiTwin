@@ -148,16 +148,35 @@ PROMPT_TEMPLATES = {
     "retirement": "你是一个专业的退休规划顾问，请用中文回答用户的问题。"
 }
 
-async def stream_chat(query: str, type: str, ai_engine):
+async def stream_chat(query: str, type: str, ai_engine,user_id: str):
     """流式聊天核心逻辑"""
     try:
         llm = ai_engine.get_openai_model()
         system_prompt = PROMPT_TEMPLATES.get(type.lower(), PROMPT_TEMPLATES["general"])
-        
-        messages = [
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=query)
-        ]
+        with next(get_db()) as session:
+            # 获取聊天记录
+            chat_room_id = user_id
+            past_msgs = session.query(ChatMessage) \
+                .filter_by(chat_room_id=chat_room_id) \
+                .order_by(ChatMessage.timestamp.desc()) \
+                .limit(4) \
+                .all()
+
+            past_msgs.reverse()
+
+            history = []
+            for msg in past_msgs:
+                if msg.role == "user":
+                    history.append(HumanMessage(content=msg.content))
+                elif msg.role == "ai":
+                    history.append(AIMessage(content=msg.content))
+
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        refers = append_context(vector_db_man.query_knowledge_base(query, "sdm"))
+        logging.error(f"{query}查询到的相关信息：{refers}")
+        messages = [SystemMessage(content=f"此刻是{current_time}{system_prompt}{refers}")]
+        messages.extend(history)
+        messages.append(HumanMessage(content=query))
 
         async def content_generator():
             stream = llm.astream(messages)

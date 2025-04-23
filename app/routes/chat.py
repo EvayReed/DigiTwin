@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request,Header
 from starlette.websockets import WebSocketDisconnect
 from starlette.websockets import WebSocket
 from pydantic import BaseModel
@@ -13,6 +13,7 @@ from langchain.schema import SystemMessage, HumanMessage
 from datetime import datetime
 
 from app.services.vector_database_server import vector_db_man
+from app.core.utils.validate import get_token_from_header, handle_token_validation
 
 load_dotenv()
 
@@ -98,18 +99,40 @@ async def getChartDataIfNeeded(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/add-str")
+async def add_str(
+        request: ChatRequest,
+        authorization: str = Header(...),
+        ):
+    try:
+        token = get_token_from_header(authorization)
+        user_id = handle_token_validation(token)
+        # result = await vector_db_man.insert_into_vector_db_str(request.query, f'user_{user_id}')
+        result = await vector_db_man.insert_into_vector_db_str(request.query, "sdm")
+        return {"message": "str uploaded successfully", "content": result}
+    except ValueError as e:
+        logger.error(f"ValueError in add_str: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Unexpected error in add_file: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 class ChatMessage_Stream(BaseModel):
     query: str
     query_type: str
 
 @router.post("/stream-chat")
 async def chat_endpoint(
-    chat_request: ChatMessage_Stream):
+    chat_request: ChatMessage_Stream,
+    authorization: str = Header(...),):
     try:
+        token = get_token_from_header(authorization)
+        user_id = handle_token_validation(token)
         generator = await stream_chat(
             query=chat_request.query,
             type=chat_request.query_type,
-            ai_engine=ai_engine
+            ai_engine=ai_engine,
+            user_id=user_id
         )
         return EventSourceResponse(generator)
     
