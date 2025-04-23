@@ -1,13 +1,16 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from starlette.websockets import WebSocketDisconnect
 from starlette.websockets import WebSocket
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
+from sse_starlette.sse import EventSourceResponse
 import asyncio
 import logging
 from enum import Enum
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
+from langchain.schema import SystemMessage, HumanMessage
+from datetime import datetime
 
 from app.services.vector_database_server import vector_db_man
 
@@ -15,7 +18,7 @@ load_dotenv()
 
 from app.core.models.chat import ChatRequest
 from app.core.utils.chart import chart
-from app.core.utils.chat import chat
+from app.core.utils.chat import chat,stream_chat
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +95,25 @@ async def getChartDataIfNeeded(request: ChatRequest):
         }
     except Exception as e:
         logger.error(f"Error in chat_endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class ChatMessage_Stream(BaseModel):
+    query: str
+    query_type: str
+
+@router.post("/stream-chat")
+async def chat_endpoint(
+    chat_request: ChatMessage_Stream):
+    try:
+        generator = await stream_chat(
+            query=chat_request.query,
+            type=chat_request.query_type,
+            ai_engine=ai_engine
+        )
+        return EventSourceResponse(generator)
+    
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
