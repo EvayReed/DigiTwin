@@ -115,7 +115,8 @@ async def stream_chat(query: str, type: str, ai_engine,user_id: str):
     """流式聊天核心逻辑"""
     try:
         llm = ai_engine.get_openai_model()
-        system_prompt = PROMPT_TEMPLATES.get(type.lower(), PROMPT_TEMPLATES["general"])
+        # 修改获取 system_prompt 的部分
+        system_prompt = PROMPT_TEMPLATES.get(type, PROMPT_TEMPLATES.get("general", ""))
         with next(get_db()) as session:
             # 获取聊天记录
             chat_room_id = user_id
@@ -140,14 +141,14 @@ async def stream_chat(query: str, type: str, ai_engine,user_id: str):
         messages = [SystemMessage(content=f"此刻是{current_time}{system_prompt}{refers}")]
         messages.extend(history)
         messages.append(HumanMessage(content=query))
-        
+        # print(f'message{messages}')
         async def content_generator():
             # full_response 可以在最后返回整体回复，用于测试
-            # full_response = ""
+            full_response = ""
             stream = llm.astream(messages)
             async for chunk in stream:
                 if chunk.content:
-                    # full_response += chunk.content
+                    full_response += chunk.content
                     yield {
                         "data": {
                             "content": chunk.content,
@@ -156,15 +157,15 @@ async def stream_chat(query: str, type: str, ai_engine,user_id: str):
                         }
                     }
                 await asyncio.sleep(0)
-            # # 返回完整的输出
-            # yield {
-            #     "data": {
-            #         "content": full_response,
-            #         "timestamp": datetime.now().isoformat(),
-            #         "query_type": type,
-            #         "is_complete": True
-            #     }
-            # }
+            # 返回完整的输出
+            yield {
+                "data": {
+                    "content": full_response,
+                    "timestamp": datetime.now().isoformat(),
+                    "query_type": type,
+                    "is_complete": True
+                }
+            }
 
         return content_generator()
     
