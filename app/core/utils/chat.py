@@ -144,11 +144,11 @@ async def stream_chat(query: str, type: str, ai_engine,user_id: str):
         # print(f'message{messages}')
         async def content_generator():
             # full_response 可以在最后返回整体回复，用于测试
-            full_response = ""
+            # full_response = ""
             stream = llm.astream(messages)
             async for chunk in stream:
                 if chunk.content:
-                    full_response += chunk.content
+                    # full_response += chunk.content
                     yield {
                         "data": {
                             "content": chunk.content,
@@ -157,15 +157,15 @@ async def stream_chat(query: str, type: str, ai_engine,user_id: str):
                         }
                     }
                 await asyncio.sleep(0)
-            # 返回完整的输出
-            yield {
-                "data": {
-                    "content": full_response,
-                    "timestamp": datetime.now().isoformat(),
-                    "query_type": type,
-                    "is_complete": True
-                }
-            }
+            # # 返回完整的输出
+            # yield {
+            #     "data": {
+            #         "content": full_response,
+            #         "timestamp": datetime.now().isoformat(),
+            #         "query_type": type,
+            #         "is_complete": True
+            #     }
+            # }
 
         return content_generator()
     
